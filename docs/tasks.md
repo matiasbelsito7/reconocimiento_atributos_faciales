@@ -51,37 +51,37 @@ Cada tarea referencia la sección de especificación que la respalda. Las decisi
 ### T-1.1: Seleccionar dataset
 - **Especificación**: specs §2.2 (Entradas esperadas), specs §2.4 (Atributos soportados)
 - **Prioridad**: alta
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Seleccionar dataset de atributos faciales visualmente observables. Documentar fuente, licencia y tamaño. Definir lista final de atributos.
 
 ### T-1.2: Definir estructura de anotaciones
 - **Especificación**: specs §2.3 (Estructura de datos)
 - **Prioridad**: alta
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Crear CSV con identificador de imagen y columnas binarias por atributo.
 
 ### T-1.3: Script de validación de datos
 - **Especificación**: specs §2.6 (Validación de datos)
 - **Prioridad**: alta
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Verificar integridad de imágenes, formato de anotaciones, duplicados y distribución de atributos.
 
-### T-1.4: Script de separación raw/processed
+### T-1.4: Gestor de datasets
 - **Especificación**: specs §2.5 (Separación de datos)
 - **Prioridad**: media
-- **Estado**: pendiente
-- **Descripción**: Mover datos procesados a `data/processed/`, mantener raw intacto.
+- **Estado**: completada
+- **Descripción**: Implementar DatasetManager con soporte para múltiples datasets y división train/val/test.
 
 ### T-1.5: Documentar dataset
 - **Especificación**: specs §2.7 (Reproducibilidad y trazabilidad)
 - **Prioridad**: media
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Crear registro con fuente, licencia, fecha de obtención, tamaño y atributos incluidos.
 
 ### T-1.6: Soporte para múltiples datasets
 - **Especificación**: specs §2.1 (Gestión de múltiples datasets)
 - **Prioridad**: media
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Implementar estructura para soportar múltiples datasets con diferentes características.
 
 ### T-1.7: Versionado de datos
