@@ -106,3 +106,6 @@ mlflow/
 # Configuraciones locales
 config/local.yaml
 config/local.yml
+
+# uv lock file
+uv.lock
