@@ -1,0 +1,108 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# Type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+*.log
+
+# Data - Raw (nunca subir datos raw)
+data/raw/images/*
+data/raw/annotations/*
+!data/raw/images/.gitkeep
+!data/raw/annotations/.gitkeep
+data/raw/**/*.jpg
+data/raw/**/*.jpeg
+data/raw/**/*.png
+data/raw/**/*.csv
+
+# Data - Processed
+data/processed/*
+!data/processed/.gitkeep
+
+# Models
+models/
+*.pt
+*.pth
+*.onnx
+*.pkl
+*.h5
+
+# MLflow
+mlruns/
+mlartifacts/
+mlflow/
+
+# Docker
+.docker/
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+.temp/
+
+# Secrets and credentials
+*.pem
+*.key
+*secret*
+*credential*
+*token*
+
+# Configuraciones locales
+config/local.yaml
+config/local.yml
