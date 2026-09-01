@@ -41,15 +41,15 @@ def main() -> None:
     if report["errors"]:
         print(f"\nErrores ({len(report['errors'])}):")
         for error in report["errors"]:
-            print(f"  ❌ {error}")
+            print(f"  [ERROR] {error}")
 
     if report["warnings"]:
         print(f"\nAdvertencias ({len(report['warnings'])}):")
         for warning in report["warnings"]:
-            print(f"  ⚠️  {warning}")
+            print(f"  [WARN] {warning}")
 
     if not report["errors"] and not report["warnings"]:
-        print("\n✅ Validación completada sin errores")
+        print("\n[OK] Validacion completada sin errores")
 
     print("=" * 60)
 

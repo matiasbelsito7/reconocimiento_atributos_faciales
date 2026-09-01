@@ -67,7 +67,7 @@ class DataValidator:
         if not self.annotations_file.exists():
             return
 
-        df = pd.read_csv(self.annotations_file)
+        df = pd.read_csv(self.annotations_file, dtype={"image_id": str})
         missing = []
 
         for image_id in df["image_id"]:
@@ -83,7 +83,7 @@ class DataValidator:
         if not self.annotations_file.exists():
             return
 
-        df = pd.read_csv(self.annotations_file)
+        df = pd.read_csv(self.annotations_file, dtype={"image_id": str})
         unreadable = []
 
         for image_id in df["image_id"].head(100):  # Muestrear primeras 100
@@ -105,7 +105,7 @@ class DataValidator:
         if not self.annotations_file.exists():
             return
 
-        df = pd.read_csv(self.annotations_file)
+        df = pd.read_csv(self.annotations_file, dtype={"image_id": str})
         duplicates = df[df["image_id"].duplicated()]
 
         if not duplicates.empty:
