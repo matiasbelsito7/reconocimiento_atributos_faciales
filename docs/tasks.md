@@ -311,19 +311,19 @@ Cada tarea referencia la sección de especificación que la respalda. Las decisi
 ### T-9.1: Diseñar sistema de monitoreo
 - **Especificación**: specs §12 (Monitoring)
 - **Prioridad**: media
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Definir métricas a monitorear, alertas y formato de registro.
 
 ### T-9.2: Implementar registro de predicciones
 - **Especificación**: specs §12.4 (Trazabilidad)
 - **Prioridad**: media
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Implementar logging de predicciones realizadas con metadata asociada.
 
 ### T-9.3: Implementar alertas básicas
 - **Especificación**: specs §12.3 (Alertas)
 - **Prioridad**: baja
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Implementar alertas para cambios significativos en distribución de predicciones.
 
 ---
