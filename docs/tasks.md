@@ -261,25 +261,25 @@ Cada tarea referencia la sección de especificación que la respalda. Las decisi
 ### T-7.1: Pipeline de inferencia
 - **Especificación**: specs §9.1-9.3 (Inference)
 - **Prioridad**: alta
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Preprocessing → Face processing → Predicción → Salida estructurada.
 
 ### T-7.2: Formato de salida
 - **Especificación**: specs §9.4 (Formato de predicciones)
 - **Prioridad**: alta
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Implementar salida JSON con bounding boxes y scores por atributo.
 
 ### T-7.3: Manejo de errores en inferencia
 - **Especificación**: specs §9.5 (Manejo de errores)
 - **Prioridad**: media
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Reportar errores sin fallar silenciosamente.
 
 ### T-7.4: Tests de inferencia
 - **Especificación**: constitution §3 (Calidad)
 - **Prioridad**: alta
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Tests de integración del pipeline completo.
 
 ---

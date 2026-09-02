@@ -42,7 +42,7 @@
 - **Estado**: Completada
 - **Archivos creados**:
   - `scripts/manage_dvc.py`
-- **Descripción**: 
+- **Descripción**:
   - DVC inicializado en el proyecto
   - Script para gestión de versiones
   - Configuración en `.gitignore`

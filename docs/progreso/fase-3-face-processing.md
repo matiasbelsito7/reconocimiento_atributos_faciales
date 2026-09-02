@@ -14,7 +14,7 @@
 - **Archivos creados**:
   - `src/facial_attributes/face_processing/__init__.py`
   - `src/facial_attributes/face_processing/detector.py`
-- **Descripción**: 
+- **Descripción**:
   - Detección de rostros usando OpenCV DNN
   - Modelo Caffe pre-entrenado (res10_300x300_ssd_iter_140000)
   - Soporte para múltiples rostros por imagen
