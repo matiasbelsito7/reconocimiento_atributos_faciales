@@ -355,19 +355,19 @@ Cada tarea referencia la sección de especificación que la respalda. Las decisi
 ### T-11.1: Diseñar pipeline de reentrenamiento
 - **Especificación**: specs §14 (Retraining Pipeline)
 - **Prioridad**: baja
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Definir flujo de validación → merge → reentrenamiento → evaluación.
 
 ### T-11.2: Implementar merge de datasets
 - **Especificación**: specs §14.3 (Pasos)
 - **Prioridad**: baja
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Implementar combinación controlada de datasets existentes con nuevos datos.
 
 ### T-11.3: Implementar criterios de aceptación
 - **Especificación**: specs §14.4 (Criterios de aceptación)
 - **Prioridad**: baja
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Implementar comparación automática con modelo anterior.
 
 ---
@@ -389,4 +389,4 @@ Cada tarea referencia la sección de especificación que la respalda. Las decisi
 
 ---
 
-*Última actualización: 2026-09-01*
+*Última actualización: 2026-09-02*
