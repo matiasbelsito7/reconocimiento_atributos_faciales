@@ -333,20 +333,20 @@ Cada tarea referencia la sección de especificación que la respalda. Las decisi
 ### T-10.1: Diseñar Model Registry
 - **Especificación**: specs §13 (Model Registry)
 - **Prioridad**: media
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Definir estados del modelo, información a almacenar y operaciones soportadas.
 
 ### T-10.2: Implementar Model Registry básico
 - **Especificación**: specs §13 (Model Registry)
 - **Prioridad**: media
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Implementar registro, versionado y consulta de modelos entrenados.
 
 ### T-10.3: Integrar con MLflow
 - **Especificación**: specs §13 (Model Registry)
 - **Prioridad**: baja
 - **Estado**: pendiente
-- **Descripción**: Evaluar uso de MLflow Model Registry como backend.
+- **Descripción**: Evaluar uso de MLflow Model Registry como backend. (Pendiente para futura implementación)
 
 ---
 
