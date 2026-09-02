@@ -345,8 +345,8 @@ Cada tarea referencia la sección de especificación que la respalda. Las decisi
 ### T-10.3: Integrar con MLflow
 - **Especificación**: specs §13 (Model Registry)
 - **Prioridad**: baja
-- **Estado**: pendiente
-- **Descripción**: Evaluar uso de MLflow Model Registry como backend. (Pendiente para futura implementación)
+- **Estado**: completada
+- **Descripción**: Evaluar uso de MLflow Model Registry como backend.
 
 ---
 
