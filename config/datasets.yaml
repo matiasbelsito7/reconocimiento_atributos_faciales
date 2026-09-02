@@ -8,20 +8,20 @@ celeba:
   source: kaggle
   kaggle_dataset: p4nt3k/celeba-deeplearning
   version: 1.0
-  
+
   # Rutas
   paths:
     root: data/raw/
     images: data/raw/images/
     attributes: data/raw/annotations/celeba_attributes.csv
     splits: data/raw/annotations/
-  
+
   # Configuración de imágenes
   images:
     format: jpg
     target_size: [218, 178]
     channels: 3
-  
+
   # Atributos
   attributes:
     num_attributes: 40
@@ -67,14 +67,14 @@ celeba:
       - Wearing_Necklace
       - Wearing_Necktie
       - Young
-  
+
   # División de datos
   splits:
     train: 0.7
     val: 0.15
     test: 0.15
     random_state: 42
-  
+
   # Validación
   validation:
     min_images: 1000
