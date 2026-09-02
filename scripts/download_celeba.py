@@ -27,7 +27,6 @@ def download_from_kaggle(output_dir: Path) -> None:
 def download_from_url(output_dir: Path) -> None:
     """Descargar CelebA desde URL directa."""
     import urllib.request
-    import zipfile
 
     # URLs de CelebA (pueden cambiar)
     urls = {
@@ -66,7 +65,9 @@ def create_sample_dataset(output_dir: Path, num_samples: int = 100) -> None:
 
     # Crear imágenes de ejemplo
     for i in range(num_samples):
-        img = Image.new("RGB", (178, 218), color=(i * 2 % 256, i * 3 % 256, i * 5 % 256))
+        img = Image.new(
+            "RGB", (178, 218), color=(i * 2 % 256, i * 3 % 256, i * 5 % 256)
+        )
         img.save(images_dir / f"{i:06d}.jpg")
 
     # Crear anotaciones de ejemplo

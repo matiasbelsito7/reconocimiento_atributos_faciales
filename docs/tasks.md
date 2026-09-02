@@ -87,8 +87,8 @@ Cada tarea referencia la sección de especificación que la respalda. Las decisi
 ### T-1.7: Versionado de datos
 - **Especificación**: specs §2.8 (Versionado de datos)
 - **Prioridad**: baja
-- **Estado**: pendiente
-- **Descripción**: Implementar sistema de versionado para datos procesados.
+- **Estado**: completada
+- **Descripción**: Implementar sistema de versionado con DVC para datos procesados.
 
 ---
 
@@ -97,19 +97,19 @@ Cada tarea referencia la sección de especificación que la respalda. Las decisi
 ### T-2.1: Pipeline de preprocessing para entrenamiento
 - **Especificación**: specs §3.1 (Preprocessing para entrenamiento)
 - **Prioridad**: alta
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Implementar redimensionamiento, normalización de color, corrección básica y data augmentation. Mantener trazabilidad de transformaciones.
 
 ### T-2.2: Pipeline de preprocessing para inferencia
 - **Especificación**: specs §3.2 (Preprocessing para inferencia)
 - **Prioridad**: alta
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Implementar pipeline optimizado para latencia baja, sin augmentation, para imagen individual.
 
 ### T-2.3: Tests de preprocessing
 - **Especificación**: constitution §3 (Calidad), specs §3.4 (Restricciones)
 - **Prioridad**: alta
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Tests para verificar reproducibilidad y que no se degrada calidad innecesariamente en ambos pipelines.
 
 ---
@@ -119,37 +119,37 @@ Cada tarea referencia la sección de especificación que la respalda. Las decisi
 ### T-3.1: Seleccionar detector de rostros
 - **Especificación**: specs §4.1 (Detección de rostros)
 - **Prioridad**: alta
-- **Estado**: pendiente
-- **Descripción**: Evaluar opciones (MTCNN, RetinaFace, Haar Cascade, HOG). **Decisión pendiente.**
+- **Estado**: completada
+- **Descripción**: OpenCV DNN con modelo Caffe pre-entrenado (res10_300x300_ssd_iter_140000).
 
 ### T-3.2: Implementar detección de rostros
 - **Especificación**: specs §4.1 (Detección de rostros)
 - **Prioridad**: alta
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Detectar bounding box de rostros, manejar múltiples rostros por imagen.
 
 ### T-3.3: Implementar extracción de rostros
 - **Especificación**: specs §4.2 (Extracción)
 - **Prioridad**: alta
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Recortar región del rostro, mantener relación de aspecto.
 
 ### T-3.4: Implementar normalización
 - **Especificación**: specs §4.3 (Normalización)
 - **Prioridad**: alta
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Redimensionar a tamaño uniforme, normalizar píxeles.
 
 ### T-3.5: Manejo de errores en face processing
 - **Especificación**: specs §4.4 (Manejo de errores)
 - **Prioridad**: media
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Reportar imágenes sin rostro detectado, decidir comportamiento para baja calidad.
 
 ### T-3.6: Tests de face processing
 - **Especificación**: constitution §3 (Calidad)
 - **Prioridad**: alta
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Tests para detección, extracción, normalización y manejo de errores.
 
 ---
@@ -159,25 +159,25 @@ Cada tarea referencia la sección de especificación que la respalda. Las decisi
 ### T-4.1: Seleccionar arquitectura del modelo
 - **Especificación**: specs §5.5 (Decisiones pendientes)
 - **Prioridad**: alta
-- **Estado**: pendiente
-- **Descripción**: Evaluar opciones (ResNet, EfficientNet, custom CNN). **Decisión pendiente.**
+- **Estado**: completada
+- **Descripción**: ResNet18/34/50 pre-entrenada en ImageNet con fine-tuning.
 
 ### T-4.2: Implementar modelo
 - **Especificación**: specs §5.1-5.4 (Model)
 - **Prioridad**: alta
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Implementar modelo multilabel con entrada rostro normalizado y salida vector de scores [0,1].
 
 ### T-4.3: Seleccionar función de pérdida
 - **Especificación**: specs §5.5 (Decisiones pendientes)
 - **Prioridad**: alta
-- **Estado**: pendiente
-- **Descripción**: Evaluar BCE, BCE con pesos, etc. **Decisión pendiente.**
+- **Estado**: completada
+- **Descripción**: BCE Loss para clasificación multilabel con soporte para pesos de clase.
 
 ### T-4.4: Tests del modelo
 - **Especificación**: constitution §3 (Calidad)
 - **Prioridad**: alta
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Tests para verificar forma de entrada/salida, rango de scores, comportamiento independiente por atributo.
 
 ---
@@ -187,37 +187,37 @@ Cada tarea referencia la sección de especificación que la respalda. Las decisi
 ### T-5.1: Configuración reproducible
 - **Especificación**: specs §6.1 (Configuración)
 - **Prioridad**: alta
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Sistema de configuración con semillas, hiperparámetros y versiones de dependencias.
 
 ### T-5.2: Pipeline de entrenamiento
 - **Especificación**: specs §6.2-6.3 (Datasets, Separación)
 - **Prioridad**: alta
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Entrenamiento con splits estrictos (train/val/test), evitar data leakage.
 
 ### T-5.3: Tracking con MLflow
 - **Especificación**: specs §6.4 (Tracking)
 - **Prioridad**: alta
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Registrar configuración, métricas, artefactos y duración de cada experimento.
 
 ### T-5.4: Sistema de checkpoints
 - **Especificación**: specs §6.5 (Checkpoints)
 - **Prioridad**: media
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Guardar checkpoints periódicos, reanudar entrenamiento, mantener mejor modelo.
 
 ### T-5.5: Métricas de entrenamiento
 - **Especificación**: specs §6.6 (Métricas de entrenamiento)
 - **Prioridad**: media
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Registrar métricas por época, detectar overfitting/underfitting.
 
 ### T-5.6: Tests de training
 - **Especificación**: constitution §3 (Calidad)
 - **Prioridad**: alta
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Tests para verificar reproducibilidad, splits correctos y tracking.
 
 ---
@@ -227,31 +227,31 @@ Cada tarea referencia la sección de especificación que la respalda. Las decisi
 ### T-6.1: Definir métricas de evaluación
 - **Especificación**: specs §7.1 (Métricas relevantes)
 - **Prioridad**: alta
-- **Estado**: pendiente
-- **Descripción**: Seleccionar métricas multilabel (exactitud, precisión, recall, F1 por atributo, métricas globales). **Decisión pendiente.**
+- **Estado**: completada
+- **Descripción**: Métricas multilabel: accuracy, precision, recall, F1 por atributo y globales.
 
 ### T-6.2: Implementar evaluación por atributo
 - **Especificación**: specs §7.2 (Evaluación por atributo)
 - **Prioridad**: alta
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Reportar rendimiento de cada atributo individualmente.
 
 ### T-6.3: Análisis de errores
 - **Especificación**: specs §7.3 (Análisis de errores)
 - **Prioridad**: media
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Identificar patrones, atributos confundidos, visualizar errores.
 
 ### T-6.4: Comparación de modelos
 - **Especificación**: specs §7.6 (Criterios de comparación)
 - **Prioridad**: media
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Framework para comparar modelos usando mismas métricas y conjunto de prueba.
 
 ### T-6.5: Tests de evaluación
 - **Especificación**: constitution §3 (Calidad)
 - **Prioridad**: alta
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Tests para verificar cálculo correcto de métricas.
 
 ---
@@ -376,11 +376,11 @@ Cada tarea referencia la sección de especificación que la respalda. Las decisi
 
 | Decisión | Fase afectada | Estado |
 |----------|---------------|--------|
-| Dataset a utilizar | Fase 1 | Pendiente |
-| Lista final de atributos | Fase 1 | Pendiente |
-| Detector de rostros | Fase 3 | Pendiente |
-| Arquitectura del modelo | Fase 4 | Pendiente |
-| Función de pérdida | Fase 4 | Pendiente |
+| Dataset a utilizar | Fase 1 | Completada (CelebA) |
+| Lista final de atributos | Fase 1 | Completada (40 atributos) |
+| Detector de rostros | Fase 3 | Completada (OpenCV DNN) |
+| Arquitectura del modelo | Fase 4 | Completada (ResNet) |
+| Función de pérdida | Fase 4 | Completada (BCE Loss) |
 | Métricas de evaluación | Fase 6 | Pendiente |
 | Interfaz de aplicación | Fase 8 | Pendiente |
 | Estrategia de monitoreo | Fase 9 | Pendiente |

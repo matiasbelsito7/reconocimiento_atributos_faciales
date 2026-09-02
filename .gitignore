@@ -109,3 +109,7 @@ config/local.yml
 
 # uv lock file
 uv.lock
+
+# DVC
+.dvc/config.local
+.dvc/cache/

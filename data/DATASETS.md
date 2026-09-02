@@ -72,24 +72,33 @@ Para este proyecto, nos enfocaremos en atributos **visualmente observables**:
 ```
 data/raw/
 ├── images/
-│   ├── img_000001.jpg
-│   ├── img_000002.jpg
-│   └── ...
+│   ├── 000001.jpg
+│   ├── 000002.jpg
+│   └── ... (202,599 imágenes)
 └── annotations/
-    └── attributes.csv
+    └── celeba_attributes.csv
 ```
 
 ### Formato de anotaciones
 
 CSV con las siguientes columnas:
-- `image_id`: Identificador único de la imagen
-- `Atr_eyeglasses`: 0 o 1
-- `Atr_hat`: 0 o 1
-- ... (cada atributo)
+- `image_id`: Identificador único de la imagen (sin extensión)
+- `Atr_5_o_clock_shadow`: 0 o 1
+- `Atr_arched_eyebrows`: 0 o 1
+- ... (40 atributos totales)
 
 ### Descarga
 
-El dataset debe descargarse manualmente desde la página oficial y colocarse en `data/raw/`.
+El dataset se descarga automáticamente usando la API de Kaggle:
+
+```bash
+uv run kaggle datasets download -d p4nt3k/celeba-deeplearning -p data/raw --unzip
+```
+
+**Configuración de Kaggle API:**
+1. Crear cuenta en Kaggle
+2. Ir a Settings > API > Create New API Token
+3. Colocar `kaggle.json` en `~/.kaggle/`
 
 **Nota**: El dataset CelebA tiene licencia solo para investigación. No se puede usar con fines comerciales.
 
