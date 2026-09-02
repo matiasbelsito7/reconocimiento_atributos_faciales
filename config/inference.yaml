@@ -1,0 +1,44 @@
+# Configuración de inferencia
+# Archivo: config/inference.yaml
+
+# Thresholds para predicciones binarias
+thresholds:
+  default: 0.5
+  per_attribute: {}
+  # Ejemplo:
+  # smiling: 0.7
+  # glasses: 0.3
+
+# Configuración de face detection
+face_detection:
+  model: opencv_dnn  # opencv_dnn | mtcnn | retinaface
+  confidence_threshold: 0.5
+  nms_threshold: 0.4
+  max_faces: 10
+  model_path: models/face_detection/
+
+# Configuración de face extraction
+face_extraction:
+  margin: 0.2
+  largest_face_only: true
+  target_size: [224, 224]
+
+# Opciones de optimización
+optimization:
+  use_fp16: false
+  batch_inference: false
+  batch_size: 8
+
+# Configuración de salida
+output:
+  format: json  # json | csv | dict
+  include_bbox: true
+  include_confidence: true
+  include_attributes: true
+  attribute_names: auto  # auto | list
+
+# Configuración de inferencia
+inference:
+  device: auto
+  model_path: checkpoints/best_model.pt
+  num_attributes: 40

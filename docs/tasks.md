@@ -289,19 +289,19 @@ Cada tarea referencia la sección de especificación que la respalda. Las decisi
 ### T-8.1: Diseñar estructura de configuración
 - **Especificación**: specs §11 (Configuration Module)
 - **Prioridad**: alta
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Definir estructura de archivos de configuración (pipeline.yaml, model.yaml, training.yaml, inference.yaml, datasets.yaml).
 
 ### T-8.2: Implementar sistema de configuración
 - **Especificación**: specs §11 (Configuration Module)
 - **Prioridad**: alta
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Implementar carga y validación de configuraciones desde archivos YAML.
 
 ### T-8.3: Tests de configuración
 - **Especificación**: constitution §3 (Calidad)
 - **Prioridad**: media
-- **Estado**: pendiente
+- **Estado**: completada
 - **Descripción**: Tests para verificar carga, validación y reproducibilidad de configuraciones.
 
 ---

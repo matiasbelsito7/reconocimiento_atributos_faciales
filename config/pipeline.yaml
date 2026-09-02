@@ -1,0 +1,27 @@
+# Configuración general del pipeline
+# Archivo: config/pipeline.yaml
+
+# Modo de operación: training | inference | evaluation
+mode: training
+
+# Rutas de directorios
+paths:
+  data_dir: data/
+  raw_data_dir: data/raw/
+  processed_data_dir: data/processed/
+  models_dir: models/
+  checkpoints_dir: checkpoints/
+  logs_dir: logs/
+  outputs_dir: outputs/
+
+# Configuración de logging
+logging:
+  level: INFO
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: logs/pipeline.log
+
+# Semilla para reproducibilidad
+seed: 42
+
+# Dispositivo: auto | cpu | cuda | mps
+device: auto

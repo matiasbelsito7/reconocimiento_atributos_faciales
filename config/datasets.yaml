@@ -1,0 +1,110 @@
+# Configuración de datasets
+# Archivo: config/datasets.yaml
+
+# Dataset principal: CelebA
+celeba:
+  name: CelebA
+  description: Dataset de atributos faciales con 202,599 imágenes y 40 atributos binarios
+  source: kaggle
+  kaggle_dataset: p4nt3k/celeba-deeplearning
+  version: 1.0
+  
+  # Rutas
+  paths:
+    root: data/raw/
+    images: data/raw/images/
+    attributes: data/raw/annotations/celeba_attributes.csv
+    splits: data/raw/annotations/
+  
+  # Configuración de imágenes
+  images:
+    format: jpg
+    target_size: [218, 178]
+    channels: 3
+  
+  # Atributos
+  attributes:
+    num_attributes: 40
+    type: binary
+    columns:
+      - 5_o_Clock_Shadow
+      - Arched_Eyebrows
+      - Attractive
+      - Bags_Under_Eyes
+      - Bald
+      - Bangs
+      - Big_Lips
+      - Big_Nose
+      - Black_Hair
+      - Blond_Hair
+      - Blurry
+      - Brown_Hair
+      - Bushy_Eyebrows
+      - Chubby
+      - Double_Chin
+      - Eyeglasses
+      - Goatee
+      - Gray_Hair
+      - Heavy_Makeup
+      - High_Cheekbones
+      - Male
+      - Mouth_Slightly_Open
+      - Mustache
+      - Narrow_Eyes
+      - No_Beard
+      - Oval_Face
+      - Pale_Skin
+      - Pointy_Nose
+      - Receding_Hairline
+      - Rosy_Cheeks
+      - Sideburns
+      - Smiling
+      - Straight_Hair
+      - Wavy_Hair
+      - Wearing_Earrings
+      - Wearing_Hat
+      - Wearing_Lipstick
+      - Wearing_Necklace
+      - Wearing_Necktie
+      - Young
+  
+  # División de datos
+  splits:
+    train: 0.7
+    val: 0.15
+    test: 0.15
+    random_state: 42
+  
+  # Validación
+  validation:
+    min_images: 1000
+    check_attributes: true
+    check_corruption: false
+
+# Dataset de ejemplo (para pruebas)
+sample:
+  name: Sample Dataset
+  description: Dataset pequeño para pruebas y desarrollo
+  source: local
+  paths:
+    root: data/sample/
+    images: data/sample/images/
+    attributes: data/sample/annotations.csv
+  images:
+    format: jpg
+    target_size: [224, 224]
+    channels: 3
+  attributes:
+    num_attributes: 5
+    type: binary
+    columns:
+      - smiling
+      - glasses
+      - male
+      - young
+      - attractive
+  splits:
+    train: 0.7
+    val: 0.15
+    test: 0.15
+    random_state: 42

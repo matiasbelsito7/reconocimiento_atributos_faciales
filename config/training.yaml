@@ -1,0 +1,58 @@
+# Configuración de entrenamiento
+# Archivo: config/training.yaml
+
+# Semilla para reproducibilidad
+seed: 42
+
+# Hiperparámetros de entrenamiento
+hyperparameters:
+  learning_rate: 0.001
+  batch_size: 32
+  epochs: 100
+  weight_decay: 0.0001
+  optimizer: adam  # adam | sgd | rmsprop
+  scheduler: reduce_on_plateau  # reduce_on_plateau | cosine | step
+
+# Configuración de early stopping
+early_stopping:
+  enabled: true
+  patience: 10
+  min_delta: 0.001
+  monitor: val_loss
+  mode: min
+
+# Métrica de selección de mejor modelo
+checkpoint:
+  monitor: val_f1_score
+  mode: max
+  save_best_only: true
+  save_last: true
+
+# Configuración de datos
+data:
+  train_split: 0.7
+  val_split: 0.15
+  test_split: 0.15
+  num_workers: 4
+  pin_memory: true
+
+# Augmentación de datos
+augmentation:
+  enabled: true
+  horizontal_flip: true
+  vertical_flip: false
+  rotation_range: 15
+  brightness_range: [0.8, 1.2]
+  contrast_range: [0.8, 1.2]
+
+# Logging
+logging:
+  log_interval: 10
+  save_tensorboard: true
+  tensorboard_dir: logs/tensorboard/
+
+# MLflow
+mlflow:
+  enabled: true
+  experiment_name: facial_attributes
+  tracking_uri: mlruns
