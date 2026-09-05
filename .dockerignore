@@ -1,0 +1,33 @@
+.git
+.github
+__pycache__
+*.pyc
+*.pyo
+.venv
+.env
+*.egg-info
+.mypy_cache
+.pytest_cache
+htmlcov
+.coverage
+
+# Datos y modelos (se montan como volumes)
+data/
+checkpoints/
+models/face_detection/*.caffemodel
+logs/
+outputs/
+
+# Docs y notebooks
+docs/
+notebooks/
+*.md
+!README.md
+
+# Tests
+tests/
+
+# Configuración de desarrollo
+.pre-commit-config.yaml
+.dvcignore
+.gitignore

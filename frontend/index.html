@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facial Attribute Recognition</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="header">
+        <h1>Facial Attribute Recognition</h1>
+        <p class="subtitle">Sube una foto o usa tu camara para predecir atributos faciales</p>
+        <div id="service-status" class="status-badge status-loading">Verificando servicio...</div>
+    </header>
+
+    <main class="main">
+        <section class="panel input-panel">
+            <h2>Entrada</h2>
+
+            <div id="webcam-section" class="section-content" style="display:none;">
+                <div class="camera-container">
+                    <video id="webcam-video" autoplay playsinline></video>
+                    <canvas id="webcam-canvas" style="display:none;"></canvas>
+                </div>
+                <div class="camera-controls">
+                    <button id="btn-capture" class="btn btn-primary" disabled>Capturar foto</button>
+                    <button id="btn-stop-camera" class="btn btn-secondary">Detener camara</button>
+                </div>
+            </div>
+
+            <div id="upload-section" class="section-content">
+                <div id="drop-zone" class="drop-zone">
+                    <div class="drop-zone-content">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                        <p>Arrastra una imagen aqui o <span class="link">selecciona un archivo</span></p>
+                        <p class="drop-zone-hint">JPEG, PNG, WebP o BMP (max 10MB)</p>
+                    </div>
+                    <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp,image/bmp" hidden>
+                </div>
+                <button id="btn-start-camera" class="btn btn-secondary btn-full">Usar camara web</button>
+            </div>
+
+            <div id="preview-section" class="section-content" style="display:none;">
+                <div class="preview-container">
+                    <img id="preview-image" alt="Vista previa">
+                </div>
+                <div class="preview-controls">
+                    <button id="btn-predict" class="btn btn-primary">Predecir atributos</button>
+                    <button id="btn-clear" class="btn btn-secondary">Limpiar</button>
+                </div>
+            </div>
+
+            <div id="loading-indicator" class="loading" style="display:none;">
+                <div class="spinner"></div>
+                <p>Procesando imagen...</p>
+            </div>
+        </section>
+
+        <section class="panel results-panel">
+            <h2>Resultados</h2>
+
+            <div id="error-message" class="error-message" style="display:none;"></div>
+
+            <div id="results-placeholder" class="results-placeholder">
+                <p>Los resultados de la prediccion apareceran aqui.</p>
+            </div>
+
+            <div id="results-content" style="display:none;">
+                <div class="results-meta">
+                    <span id="result-faces">Rostros detectados: 0</span>
+                    <span id="result-time">Tiempo: 0ms</span>
+                </div>
+
+                <div id="results-image-container" class="results-image-container">
+                    <img id="results-image" alt="Imagen con detecciones">
+                </div>
+
+                <div id="attributes-grid" class="attributes-grid"></div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>Facial Attribute Recognition v0.1.0 &mdash; 40 atributos CelebA</p>
+    </footer>
+
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

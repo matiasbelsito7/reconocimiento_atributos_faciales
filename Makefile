@@ -41,8 +41,23 @@ clean: ## Limpiar archivos temporales
 
 validate: lint format-check typecheck test ## Ejecutar todas las validaciones
 
-docker-build: ## Construir imagen Docker
-	docker build -t facial-attribute-recognition .
+docker-build: ## Construir imagenes Docker
+	docker compose build
 
-docker-run: ## Ejecutar contenedor Docker
-	docker run -p 8000:8000 facial-attribute-recognition
+docker-run: ## Ejecutar servicios Docker
+	docker compose up -d
+
+docker-stop: ## Detener servicios Docker
+	docker compose down
+
+docker-logs: ## Ver logs de Docker
+	docker compose logs -f
+
+run-api: ## Ejecutar API en desarrollo (uvicorn --reload)
+	uv run uvicorn facial_attributes.api.main:app --reload --port 8000
+
+run-app: ## Ejecutar API + Frontend en http://localhost:8000
+	uv run uvicorn facial_attributes.api.main:app --reload --port 8000
+
+run-api-prod: ## Ejecutar API en produccion (gunicorn)
+	uv run gunicorn facial_attributes.api.main:app --workers 2 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --timeout 120
