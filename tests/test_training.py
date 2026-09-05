@@ -62,6 +62,7 @@ class TestTrainingConfig:
         assert config.num_epochs == 50
         assert config.batch_size == 32
         assert config.learning_rate == 1e-4
+        assert config.auto_pos_weight is True
 
     def test_custom_config(self) -> None:
         """Test de configuración personalizada."""
@@ -70,12 +71,14 @@ class TestTrainingConfig:
             num_epochs=100,
             batch_size=64,
             learning_rate=1e-3,
+            auto_pos_weight=False,
         )
 
         assert config.seed == 123
         assert config.num_epochs == 100
         assert config.batch_size == 64
         assert config.learning_rate == 1e-3
+        assert config.auto_pos_weight is False
 
     def test_invalid_ratios(self) -> None:
         """Test de ratios inválidos."""
@@ -261,6 +264,9 @@ class TestMetricsCalculator:
         assert isinstance(result, MetricsResult)
         assert 0.0 <= result.accuracy <= 1.0
         assert 0.0 <= result.f1 <= 1.0
+        assert 0.0 <= result.macro_f1 <= 1.0
+        assert 0.0 <= result.average_precision <= 1.0
+        assert 0.0 <= result.macro_roc_auc <= 1.0
 
     def test_calculate_per_attribute(self) -> None:
         """Test de métricas por atributo."""
@@ -273,6 +279,10 @@ class TestMetricsCalculator:
 
         assert "smiling" in result.per_attribute
         assert "glasses" in result.per_attribute
+        for _attr_name, attr_metrics in result.per_attribute.items():
+            assert "f1" in attr_metrics
+            assert "pr_auc" in attr_metrics
+            assert "roc_auc" in attr_metrics
 
     def test_calculate_loss(self) -> None:
         """Test de cálculo de pérdida."""

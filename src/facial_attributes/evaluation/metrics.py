@@ -10,6 +10,7 @@ from sklearn.metrics import (
     hamming_loss,
     precision_score,
     recall_score,
+    roc_auc_score,
 )
 
 
@@ -22,6 +23,8 @@ class AttributeMetrics:
     precision: float
     recall: float
     f1: float
+    pr_auc: float
+    roc_auc: float
     support: int
     positive_rate: float
     prediction_rate: float
@@ -35,8 +38,10 @@ class EvaluationMetrics:
     precision: float
     recall: float
     f1: float
+    macro_f1: float
     hamming: float
     average_precision: float
+    macro_roc_auc: float
     per_attribute: list[AttributeMetrics] = field(default_factory=list)
     best_attributes: list[str] = field(default_factory=list)
     worst_attributes: list[str] = field(default_factory=list)
@@ -88,6 +93,12 @@ class MetricsCalculator:
 
         per_attribute = self._calculate_per_attribute(predictions, targets, threshold)
 
+        f1_per_attr = [attr.f1 for attr in per_attribute]
+        macro_f1 = float(np.mean(f1_per_attr)) if f1_per_attr else 0.0
+
+        roc_auc_per_attr = [attr.roc_auc for attr in per_attribute]
+        macro_roc_auc = float(np.mean(roc_auc_per_attr)) if roc_auc_per_attr else 0.0
+
         sorted_attrs = sorted(per_attribute, key=lambda x: x.f1, reverse=True)
         best_attributes = [a.name for a in sorted_attrs[:5]]
         worst_attributes = [a.name for a in sorted_attrs[-5:]]
@@ -97,8 +108,10 @@ class MetricsCalculator:
             precision=float(precision),
             recall=float(recall),
             f1=float(f1),
+            macro_f1=macro_f1,
             hamming=float(hamming),
             average_precision=float(avg_precision),
+            macro_roc_auc=macro_roc_auc,
             per_attribute=per_attribute,
             best_attributes=best_attributes,
             worst_attributes=worst_attributes,
@@ -143,6 +156,18 @@ class MetricsCalculator:
             positive_rate = float(targets[:, i].mean())
             prediction_rate = float(pred_binary[:, i].mean())
 
+            try:
+                pr_auc = float(
+                    average_precision_score(targets[:, i], predictions[:, i])
+                )
+            except ValueError:
+                pr_auc = 0.0
+
+            try:
+                roc_auc = float(roc_auc_score(targets[:, i], predictions[:, i]))
+            except ValueError:
+                roc_auc = 0.0
+
             per_attribute.append(
                 AttributeMetrics(
                     name=attr_name,
@@ -150,6 +175,8 @@ class MetricsCalculator:
                     precision=precision,
                     recall=recall,
                     f1=f1,
+                    pr_auc=pr_auc,
+                    roc_auc=roc_auc,
                     support=support,
                     positive_rate=positive_rate,
                     prediction_rate=prediction_rate,

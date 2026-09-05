@@ -2,12 +2,15 @@
 
 from dataclasses import dataclass, field
 
+import numpy as np
 import torch
 from sklearn.metrics import (
     accuracy_score,
+    average_precision_score,
     f1_score,
     precision_score,
     recall_score,
+    roc_auc_score,
 )
 
 
@@ -19,6 +22,9 @@ class MetricsResult:
     precision: float
     recall: float
     f1: float
+    macro_f1: float
+    average_precision: float
+    macro_roc_auc: float
     per_attribute: dict[str, dict[str, float]] = field(default_factory=dict)
 
 
@@ -61,8 +67,17 @@ class MetricsCalculator:
         recall = recall_score(target_np, pred_binary, average="micro", zero_division=0)
         f1 = f1_score(target_np, pred_binary, average="micro", zero_division=0)
 
+        try:
+            avg_precision = average_precision_score(
+                target_np, pred_proba, average="micro"
+            )
+        except ValueError:
+            avg_precision = 0.0
+
         per_attribute = {}
         num_attributes = target_np.shape[1]
+        f1_per_attr = []
+        roc_auc_per_attr = []
 
         for i in range(num_attributes):
             attr_name = (
@@ -70,6 +85,25 @@ class MetricsCalculator:
                 if i < len(self.attribute_names)
                 else f"attr_{i}"
             )
+
+            attr_f1 = float(
+                f1_score(target_np[:, i], pred_binary[:, i], zero_division=0)
+            )
+            f1_per_attr.append(attr_f1)
+
+            try:
+                pr_auc = float(
+                    average_precision_score(target_np[:, i], pred_proba[:, i])
+                )
+            except ValueError:
+                pr_auc = 0.0
+
+            try:
+                roc_auc = float(roc_auc_score(target_np[:, i], pred_proba[:, i]))
+                roc_auc_per_attr.append(roc_auc)
+            except ValueError:
+                roc_auc = 0.0
+
             per_attribute[attr_name] = {
                 "accuracy": float(accuracy_score(target_np[:, i], pred_binary[:, i])),
                 "precision": float(
@@ -78,16 +112,22 @@ class MetricsCalculator:
                 "recall": float(
                     recall_score(target_np[:, i], pred_binary[:, i], zero_division=0)
                 ),
-                "f1": float(
-                    f1_score(target_np[:, i], pred_binary[:, i], zero_division=0)
-                ),
+                "f1": attr_f1,
+                "pr_auc": pr_auc,
+                "roc_auc": roc_auc,
             }
+
+        macro_f1 = float(np.mean(f1_per_attr)) if f1_per_attr else 0.0
+        macro_roc_auc = float(np.mean(roc_auc_per_attr)) if roc_auc_per_attr else 0.0
 
         return MetricsResult(
             accuracy=float(accuracy),
             precision=float(precision),
             recall=float(recall),
             f1=float(f1),
+            macro_f1=macro_f1,
+            average_precision=float(avg_precision),
+            macro_roc_auc=macro_roc_auc,
             per_attribute=per_attribute,
         )
 

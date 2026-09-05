@@ -95,3 +95,69 @@ class FacialAttributeDataset(Dataset):
             weight = neg_count / (pos_count + 1e-6)
             weights.append(min(weight, 50.0))
         return torch.tensor(weights, dtype=torch.float32)
+
+
+class CachedAttributeDataset(Dataset):
+    """Dataset que lee imagenes pre-resize (.npy) desde un cache.
+
+    Evita re-redimensionar imagenes en cada epoca, acelerando el
+    entrenamiento significativamente en CPU.
+    """
+
+    def __init__(
+        self,
+        annotations_file: Path,
+        cache_dir: Path,
+        attribute_columns: list[str] | None = None,
+    ) -> None:
+        """Inicializar dataset basado en cache.
+
+        Args:
+            annotations_file: Ruta al CSV de anotaciones.
+            cache_dir: Directorio con los .npy de las imagenes.
+            attribute_columns: Columnas de atributos a utilizar.
+        """
+        self.df = pd.read_csv(annotations_file)
+        self.cache_dir = Path(cache_dir)
+        self.npy_dir = self.cache_dir / "npy"
+
+        if attribute_columns is None:
+            self.attribute_columns = [
+                col for col in self.df.columns if col.startswith("Atr_")
+            ]
+        else:
+            self.attribute_columns = attribute_columns
+
+        if "image_id" not in self.df.columns:
+            raise ValueError("El CSV debe tener una columna 'image_id'")
+
+    def __len__(self) -> int:
+        """Longitud del dataset."""
+        return len(self.df)
+
+    def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:
+        """Obtener elemento en el índice dado.
+
+        Args:
+            idx: Índice del elemento.
+
+        Returns:
+            Tupla de (imagen, atributos).
+        """
+        npy_path = self.npy_dir / f"{idx:06d}.npy"
+        image = torch.from_numpy(np.load(npy_path))
+
+        row = self.df.iloc[idx]
+        attributes = torch.tensor(
+            row[self.attribute_columns].values.astype(np.float32),
+            dtype=torch.float32,
+        )
+        return image, attributes
+
+    def get_attribute_columns(self) -> list[str]:
+        """Obtener columnas de atributos."""
+        return self.attribute_columns
+
+    def get_num_attributes(self) -> int:
+        """Obtener número de atributos."""
+        return len(self.attribute_columns)

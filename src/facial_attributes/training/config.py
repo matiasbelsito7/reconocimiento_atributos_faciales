@@ -25,6 +25,8 @@ class TrainingConfig:
     pretrained: bool = True
     dropout_rate: float = 0.5
 
+    auto_pos_weight: bool = True
+
     train_ratio: float = 0.8
     val_ratio: float = 0.1
     test_ratio: float = 0.1

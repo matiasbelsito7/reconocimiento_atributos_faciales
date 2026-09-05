@@ -84,12 +84,14 @@ class Trainer:
         self,
         num_attributes: int,
         pos_weight: torch.Tensor | None = None,
+        train_loader: DataLoader | None = None,
     ) -> None:
         """Configurar modelo, pérdida y optimizador.
 
         Args:
             num_attributes: Número de atributos a predecir.
-            pos_weight: Pesos de clase positiva.
+            pos_weight: Pesos de clase positiva (None = auto si auto_pos_weight).
+            train_loader: DataLoader de entrenamiento (necesario si auto_pos_weight).
         """
         model_config = ModelConfig(
             num_attributes=num_attributes,
@@ -102,6 +104,9 @@ class Trainer:
         self._loss_fn = MultilabelLoss()
         if pos_weight is not None:
             self._loss_fn.set_pos_weight(pos_weight.to(self.device))
+        elif self.config.auto_pos_weight and train_loader is not None:
+            auto_weights = self._calculate_pos_weight(train_loader)
+            self._loss_fn.set_pos_weight(auto_weights.to(self.device))
 
         self._optimizer = torch.optim.Adam(
             self._model.parameters(),
@@ -110,6 +115,24 @@ class Trainer:
         )
 
         self._metrics_calculator = MetricsCalculator()
+
+    def _calculate_pos_weight(self, dataloader: DataLoader) -> torch.Tensor:
+        """Calcular pos_weight desde el training set.
+
+        Args:
+            dataloader: DataLoader de entrenamiento.
+
+        Returns:
+            Tensor de pos_weight por atributo [num_attributes].
+        """
+        num_pos = torch.zeros(self.config.num_attributes)
+        num_samples = 0
+        for _, attributes in dataloader:
+            num_pos += attributes.sum(dim=0)
+            num_samples += attributes.shape[0]
+        num_neg = num_samples - num_pos
+        pos_weight = num_neg / (num_pos + 1e-6)
+        return pos_weight
 
     def train_epoch(self, dataloader: DataLoader) -> dict[str, float]:
         """Entrenar una época.

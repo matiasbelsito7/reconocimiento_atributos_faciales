@@ -12,6 +12,7 @@ from facial_attributes.evaluation.metrics import (
     EvaluationMetrics,
     MetricsCalculator,
 )
+from facial_attributes.evaluation.thresholds import ThresholdOptimizer, ThresholdResult
 
 
 @pytest.fixture
@@ -44,6 +45,8 @@ class TestAttributeMetrics:
             precision=0.85,
             recall=0.88,
             f1=0.86,
+            pr_auc=0.92,
+            roc_auc=0.91,
             support=50,
             positive_rate=0.5,
             prediction_rate=0.52,
@@ -52,6 +55,8 @@ class TestAttributeMetrics:
         assert metrics.name == "smiling"
         assert metrics.accuracy == 0.9
         assert metrics.f1 == 0.86
+        assert metrics.pr_auc == 0.92
+        assert metrics.roc_auc == 0.91
 
 
 class TestEvaluationMetrics:
@@ -64,13 +69,17 @@ class TestEvaluationMetrics:
             precision=0.83,
             recall=0.87,
             f1=0.85,
+            macro_f1=0.84,
             hamming=0.15,
             average_precision=0.88,
+            macro_roc_auc=0.89,
         )
 
         assert metrics.accuracy == 0.85
         assert metrics.f1 == 0.85
+        assert metrics.macro_f1 == 0.84
         assert metrics.hamming == 0.15
+        assert metrics.macro_roc_auc == 0.89
 
 
 class TestMetricsCalculator:
@@ -105,6 +114,8 @@ class TestMetricsCalculator:
         assert 0.0 <= metrics.accuracy <= 1.0
         assert 0.0 <= metrics.f1 <= 1.0
         assert 0.0 <= metrics.hamming <= 1.0
+        assert 0.0 <= metrics.macro_f1 <= 1.0
+        assert 0.0 <= metrics.macro_roc_auc <= 1.0
 
     def test_calculate_per_attribute(
         self,
@@ -121,6 +132,8 @@ class TestMetricsCalculator:
         for attr in metrics.per_attribute:
             assert isinstance(attr, AttributeMetrics)
             assert 0.0 <= attr.f1 <= 1.0
+            assert 0.0 <= attr.pr_auc <= 1.0
+            assert 0.0 <= attr.roc_auc <= 1.0
 
     def test_best_worst_attributes(
         self,
@@ -135,6 +148,48 @@ class TestMetricsCalculator:
 
         assert len(metrics.best_attributes) > 0
         assert len(metrics.worst_attributes) > 0
+
+
+class TestThresholdOptimizer:
+    """Tests para ThresholdOptimizer."""
+
+    def test_optimizer_initialization(self) -> None:
+        """Test de inicialización del optimizador."""
+        optimizer = ThresholdOptimizer()
+
+        assert optimizer is not None
+
+    def test_optimize_thresholds(
+        self,
+        sample_predictions: tuple[np.ndarray, np.ndarray],
+        sample_attribute_names: list[str],
+    ) -> None:
+        """Test de optimización de thresholds."""
+        predictions, targets = sample_predictions
+        optimizer = ThresholdOptimizer()
+
+        results = optimizer.optimize(predictions, targets, sample_attribute_names)
+
+        assert len(results) == len(sample_attribute_names)
+        for result in results:
+            assert isinstance(result, ThresholdResult)
+            assert 0.0 <= result.threshold <= 1.0
+            assert 0.0 <= result.f1_score <= 1.0
+
+    def test_apply_thresholds(
+        self,
+        sample_predictions: tuple[np.ndarray, np.ndarray],
+        sample_attribute_names: list[str],
+    ) -> None:
+        """Test de aplicación de thresholds."""
+        predictions, targets = sample_predictions
+        optimizer = ThresholdOptimizer()
+
+        results = optimizer.optimize(predictions, targets, sample_attribute_names)
+        pred_binary = optimizer.apply_thresholds(predictions, results)
+
+        assert pred_binary.shape == predictions.shape
+        assert set(np.unique(pred_binary)).issubset({0, 1})
 
 
 class TestEvaluator:
@@ -227,3 +282,22 @@ class TestEvaluator:
         assert (tmp_path / "report" / "metrics.json").exists()
         assert (tmp_path / "report" / "attribute_summary.csv").exists()
         assert (tmp_path / "report" / "error_analysis.json").exists()
+
+    def test_evaluate_with_optimized_thresholds(
+        self,
+        sample_predictions: tuple[np.ndarray, np.ndarray],
+        sample_attribute_names: list[str],
+    ) -> None:
+        """Test de evaluación con thresholds optimizados."""
+        predictions, targets = sample_predictions
+        evaluator = Evaluator(sample_attribute_names)
+
+        report, thresholds = evaluator.evaluate_with_optimized_thresholds(
+            predictions, targets
+        )
+
+        assert isinstance(report, EvaluationReport)
+        assert len(thresholds) == len(sample_attribute_names)
+        for threshold in thresholds:
+            assert isinstance(threshold, ThresholdResult)
+            assert 0.0 <= threshold.threshold <= 1.0
