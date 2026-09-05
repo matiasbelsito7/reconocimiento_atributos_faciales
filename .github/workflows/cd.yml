@@ -1,0 +1,140 @@
+name: CD
+
+on:
+  repository_dispatch:
+    types: [champion-model-changed]
+  workflow_dispatch:
+    inputs:
+      model_name:
+        description: Nombre del modelo champion
+        required: true
+        default: facial_attribute_classifier
+      model_version:
+        description: Versión del modelo champion
+        required: true
+      model_url:
+        description: URL del checkpoint del modelo champion
+        required: true
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: cd
+  cancel-in-progress: false
+
+env:
+  BACKEND_IMAGE: ghcr.io/${{ github.repository }}/backend
+  FRONTEND_IMAGE: ghcr.io/${{ github.repository }}/frontend
+  MODEL_FILENAME: best_model.pt
+
+jobs:
+  build-and-push:
+    name: Build and push images
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.prepare.outputs.image_tag }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare image tag
+        id: prepare
+        run: |
+          MODEL_VERSION="${{ github.event.client_payload.model_version || inputs.model_version }}"
+          IMAGE_TAG="${MODEL_VERSION:-latest}"
+          IMAGE_TAG="$(echo "$IMAGE_TAG" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9._-]+/-/g; s/^-+//; s/-+$//')"
+          IMAGE_TAG="${IMAGE_TAG:-latest}"
+          echo "image_tag=${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: |
+            ${{ env.BACKEND_IMAGE }}:latest
+            ${{ env.BACKEND_IMAGE }}:${{ steps.prepare.outputs.image_tag }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          file: frontend/Dockerfile
+          push: true
+          tags: |
+            ${{ env.FRONTEND_IMAGE }}:latest
+            ${{ env.FRONTEND_IMAGE }}:${{ steps.prepare.outputs.image_tag }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    name: Deploy champion to production
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.CD_SSH_PRIVATE_KEY }}
+
+      - name: Prepare SSH access
+        env:
+          CD_HOST: ${{ secrets.CD_HOST }}
+          CD_USERNAME: ${{ secrets.CD_USERNAME }}
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          ssh-keyscan -H "$CD_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          echo "SSH_TARGET=${CD_USERNAME}@${CD_HOST}" >> "$GITHUB_ENV"
+
+      - name: Prepare deploy directory
+        env:
+          CD_DEPLOY_PATH: ${{ vars.CD_DEPLOY_PATH }}
+        run: |
+          DEPLOY_PATH="${CD_DEPLOY_PATH:-/opt/facial-attributes}"
+          echo "DEPLOY_PATH=${DEPLOY_PATH}" >> "$GITHUB_ENV"
+          ssh "$SSH_TARGET" "mkdir -p '${DEPLOY_PATH}/checkpoints' '${DEPLOY_PATH}/models'"
+
+      - name: Upload production compose file
+        run: |
+          scp docker-compose.prod.yml "$SSH_TARGET:$DEPLOY_PATH/docker-compose.prod.yml"
+
+      - name: Download champion model on server
+        env:
+          MODEL_URL: ${{ github.event.client_payload.model_url || inputs.model_url }}
+        run: |
+          if [ -z "$MODEL_URL" ]; then
+            echo "No se proporcionó model_url para el modelo champion."
+            exit 1
+          fi
+          ssh "$SSH_TARGET" \
+            "cd '${DEPLOY_PATH}' && curl -fsSL --retry 3 '$MODEL_URL' -o 'checkpoints/${MODEL_FILENAME}.new' && mv -f 'checkpoints/${MODEL_FILENAME}.new' 'checkpoints/${MODEL_FILENAME}' && ls -lh 'checkpoints/${MODEL_FILENAME}'"
+
+      - name: Pull and recreate services
+        env:
+          IMAGE_TAG: ${{ needs.build-and-push.outputs.image_tag }}
+        run: |
+          ssh "$SSH_TARGET" \
+            "cd '${DEPLOY_PATH}' && BACKEND_IMAGE='${BACKEND_IMAGE}' FRONTEND_IMAGE='${FRONTEND_IMAGE}' IMAGE_TAG='${IMAGE_TAG}' docker compose -f docker-compose.prod.yml pull backend frontend && BACKEND_IMAGE='${BACKEND_IMAGE}' FRONTEND_IMAGE='${FRONTEND_IMAGE}' IMAGE_TAG='${IMAGE_TAG}' docker compose -f docker-compose.prod.yml up -d --remove-orphans --no-build"
+
+      - name: Verify deployment
+        run: |
+          ssh "$SSH_TARGET" \
+            "cd '${DEPLOY_PATH}' && for i in \$(seq 1 12); do response=\$(curl -fsS http://localhost:8000/api/health 2>/dev/null) && break || sleep 10; done; if [ -z \"\$response\" ]; then echo 'Health check fallido tras espera.'; exit 1; fi; echo \"\$response\" | grep -q '\"model_loaded\": *true' || { echo 'El modelo champion no se cargó correctamente.'; exit 1; }; echo 'Despliegue verificado: '\$response"
