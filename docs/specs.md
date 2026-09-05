@@ -285,12 +285,16 @@ El face processing es responsable de localizar y preparar los rostros para la in
 - Capacidad de umbralizar scores para obtener predicciones binarias.
 - Soporte para entrada extendida (landmarks, metadata) cuando esté disponible.
 
-### 5.5 Decisiones pendientes
+### 5.5 Decisiones tomadas
 
-- **Arquitectura concreta del modelo** → pendiente de definición.
-- **Función de pérdida** → pendiente de definición.
-- **Estrategia de balanceo de clases** → pendiente de definición.
-- **Uso de landmarks faciales** → pendiente de definición.
+| Decisión | Elección | Justificación |
+|----------|----------|---------------|
+| Arquitectura | ResNet18/34/50 pre-entrenada + fine-tuning | Transfer learning robusto, buen balance rendimiento/complexidad |
+| Función de pérdida | BCEWithLogitsLoss | Estándar para multilabel independiente |
+| Balanceo de clases | Cálculo automático de `pos_weight = num_neg / num_pos` por atributo desde training set | Evita sesgo hacia clases mayoritarias sin intervención manual |
+| Métricas de evaluación | Precision, Recall, F1 por atributo + Macro F1 + PR-AUC + ROC-AUC | Cobertura completa: ranking (PR-AUC, ROC-AUC) y clasificación (F1) |
+| Thresholds | Optimización independiente por atributo en validación usando F1 como criterio | Atributos tienen distribuciones diferentes; threshold fijo subóptimo |
+| Landmarks | Pendiente (experimento controlado contra baseline) | Evaluar beneficio antes de agregar complejidad |
 
 ### 5.6 Restricciones
 
@@ -596,6 +600,22 @@ Almacenar, versionar y gestionar modelos entrenados.
 
 **Pendiente de definición** la implementación concreta (MLflow Model Registry o alternativa).
 
+### 13.6 Continuous Deployment del modelo champion
+
+Cuando el modelo en estado **Production** (champion) cambia, el sistema debe re-desplegar automáticamente el servicio con los nuevos pesos.
+
+**Operación de despliegue** (GitHub Actions, workflow `cd.yml`):
+
+1. **Trigger**: evento `repository_dispatch` de tipo `champion-model-changed`, con `model_name`, `model_version` y `model_url` del champion; o ejecución manual (`workflow_dispatch`).
+2. **Build**: construir y publicar en GitHub Container Registry las imágenes `backend` y `frontend`, etiquetadas con `latest` y con la versión del champion.
+3. **Deploy**: conectar por SSH al servidor, copiar `docker-compose.prod.yml`, descargar el checkpoint del champion (`model_url`) al directorio de checkpoints y recrear los servicios con Docker Compose.
+4. **Verificación**: comprobar que `/api/health` responde con el modelo cargado (`model_loaded: true`).
+
+**Restricciones**:
+- Los pesos del modelo no se incluyen en la imagen de Docker; se descargan a un volumen en el servidor.
+- El despliegue debe ser reproducible: misma imagen + mismo checkpoint ⇒ mismo comportamiento.
+- Un despliegue fallido no debe dejar el servicio anterior fuera de operación (recreación atómica con Docker Compose y `restart: unless-stopped` visualizable desde el health check).
+
 ---
 
 ## 14. Retraining Pipeline
@@ -706,7 +726,7 @@ new_data → validation → merge_with_existing → retraining → evaluation �
 
 ---
 
-*Última actualización: 2026-09-01*
+*Última actualización: 2026-09-05*
 
 ---
 
@@ -730,5 +750,6 @@ new_data → validation → merge_with_existing → retraining → evaluation �
 | §3 | Separación de pipelines training/inference |
 | §5 | Soporte para landmarks y metadata adicional |
 | §7 | Separación clara de evaluation, análisis de errores mejorado |
+| §13 | Agregada §13.6: Continuous Deployment del modelo champion |
 | §15 | Numeración actualizada |
 | §16 | Constraints actualizados |

@@ -372,6 +372,148 @@ Cada tarea referencia la sección de especificación que la respalda. Las decisi
 
 ---
 
+## Fase 12: API / Aplicación
+
+### T-12.1: Agregar dependencias de API
+- **Especificación**: specs §10 (Application / API)
+- **Prioridad**: alta
+- **Estado**: completada
+- **Descripción**: Agregar fastapi, uvicorn, gunicorn y python-multipart a las dependencias del proyecto en `pyproject.toml`.
+
+### T-12.2: Definir modelos Pydantic (schemas)
+- **Especificación**: specs §10 (Application / API), specs §9.4 (Formato de predicciones)
+- **Prioridad**: alta
+- **Estado**: completada
+- **Descripción**: Crear `src/facial_attributes/api/schemas.py` con los modelos Pydantic para request/response: `PredictResponse`, `FaceResult`, `HealthResponse`, `AttributesListResponse`.
+
+### T-12.3: Implementar inyección de dependencias del pipeline
+- **Especificación**: specs §10 (Application / API), specs §9 (Inference)
+- **Prioridad**: alta
+- **Estado**: completada
+- **Descripción**: Crear `src/facial_attributes/api/dependencies.py` con singleton de `InferencePipeline` y lazy loading del modelo al startup.
+
+### T-12.4: Implementar endpoints de la API
+- **Especificación**: specs §10 (Application / API), specs §9.4 (Formato de predicciones)
+- **Prioridad**: alta
+- **Estado**: completada
+- **Descripción**: Crear `src/facial_attributes/api/routes.py` con endpoints: `GET /api/health`, `POST /api/predict`, `GET /api/attributes`.
+
+### T-12.5: Crear app FastAPI principal
+- **Especificación**: specs §10 (Application / API)
+- **Prioridad**: alta
+- **Estado**: completada
+- **Descripción**: Crear `src/facial_attributes/api/main.py` con FastAPI app, lifespan manager, CORS middleware y CMD de gunicorn+uvicorn.
+
+### T-12.6: Tests de la API
+- **Especificación**: constitution §3 (Calidad de software)
+- **Prioridad**: alta
+- **Estado**: completada
+- **Descripción**: Crear `tests/test_api.py` con tests para health, predict (con imagen), predict (sin modelo) y attributes endpoint. 18/18 tests pasan.
+
+---
+
+## Fase 13: Frontend Web
+
+### T-13.1: Crear estructura HTML del frontend
+- **Especificación**: specs §10 (Application / API)
+- **Prioridad**: alta
+- **Estado**: completada
+- **Descripción**: Crear `frontend/index.html` con layout responsive: panel de entrada (webcam/upload) y panel de resultados (imagen + tabla de atributos).
+
+### T-13.2: Implementar estilos CSS
+- **Especificación**: specs §10 (Application / API)
+- **Prioridad**: media
+- **Estado**: completada
+- **Descripción**: Crear `frontend/css/style.css` con diseño responsive, cards de atributos con color coding, estados de loading/error/éxito.
+
+### T-13.3: Implementar módulo de cámara web
+- **Especificación**: specs §10 (Application / API)
+- **Prioridad**: alta
+- **Estado**: completada
+- **Descripción**: Crear `frontend/js/webcam.js` con getUserMedia, captura manual vía botón, conversión a blob, fallback a upload si no hay cámara.
+
+### T-13.4: Implementar módulo de subida de archivos
+- **Especificación**: specs §10 (Application / API)
+- **Prioridad**: alta
+- **Estado**: completada
+- **Descripción**: Crear `frontend/js/upload.js` con file input, drag & drop, validación de tipo/tamaño, preview de imagen.
+
+### T-13.5: Implementar lógica principal del frontend
+- **Especificación**: specs §10 (Application / API)
+- **Prioridad**: alta
+- **Estado**: completada
+- **Descripción**: Crear `frontend/js/app.js` con orquestación de cámara/upload, envío a API, renderizado de resultados (bbox + scores), manejo de errores.
+
+### T-13.6: Configurar nginx como proxy inverso
+- **Especificación**: specs §10 (Application / API)
+- **Prioridad**: alta
+- **Estado**: completada
+- **Descripción**: Crear `frontend/nginx.conf` para servir archivos estáticos y proxy de `/api/` al backend.
+
+### T-13.7: Crear Dockerfile del frontend
+- **Especificación**: specs §10 (Application / API)
+- **Prioridad**: alta
+- **Estado**: completada
+- **Descripción**: Crear `frontend/Dockerfile` basado en `nginx:alpine` para servir el frontend estático.
+
+---
+
+## Fase 14: Docker
+
+### T-14.1: Crear Dockerfile del backend
+- **Especificación**: specs §15 (Constraints), specs §10 (Application / API)
+- **Prioridad**: alta
+- **Estado**: completada
+- **Descripción**: Crear `Dockerfile` multi-stage (builder + runtime) para el backend FastAPI. Base `python:3.11-slim`, PyTorch CPU-only, usuario no-root, healthcheck.
+
+### T-14.2: Crear .dockerignore
+- **Especificación**: specs §15 (Constraints)
+- **Prioridad**: media
+- **Estado**: completada
+- **Descripción**: Crear `.dockerignore` excluyendo `.git`, `__pycache__`, `.venv`, `data/`, `checkpoints/`, `models/`, `tests/`, `notebooks/`, `docs/`.
+
+### T-14.3: Crear docker-compose.yml
+- **Especificación**: specs §15 (Constraints), specs §10 (Application / API)
+- **Prioridad**: alta
+- **Estado**: completada
+- **Descripción**: Crear `docker-compose.yml` con servicios `backend` (FastAPI, puerto 8000, volumes para modelos) y `frontend` (nginx, puerto 3000, depends_on backend healthy).
+
+### T-14.4: Actualizar Makefile con targets Docker
+- **Especificación**: specs §15 (Constraints)
+- **Prioridad**: media
+- **Estado**: completada
+- **Descripción**: Actualizar targets `docker-build`, `docker-run` y agregar `docker-stop`, `docker-logs` usando `docker compose`.
+
+### T-14.5: Tests de integración Docker
+- **Especificación**: constitution §3 (Calidad de software)
+- **Prioridad**: media
+- **Estado**: pendiente
+- **Descripción**: Verificar que `docker compose build && docker compose up` levanta ambos servicios correctamente y que el health check responde.
+
+### T-14.6: Workflow de CD para despliegue del modelo champion
+- **Especificación**: specs §13.3 (Estados del modelo), specs §13.4 (Operaciones), specs §16 (Constraints)
+- **Prioridad**: media
+- **Estado**: completada
+- **Descripción**: Crear `.github/workflows/cd.yml` que, al cambiar el modelo champion, construye y publica las imágenes backend/frontend en GHCR y despliega al servidor vía SSH: descarga el checkpoint del champion por URL, recrea los servicios con `docker compose -f docker-compose.prod.yml` y verifica el health check con modelo cargado. Se dispara por `repository_dispatch` (evento `champion-model-changed`) o manualmente por `workflow_dispatch`.
+
+**Payload para `repository_dispatch`**:
+
+```json
+{
+  "event_type": "champion-model-changed",
+  "client_payload": {
+    "model_name": "facial_attribute_classifier",
+    "model_version": "1.2.3",
+    "model_url": "https://.../best_model.pt"
+  }
+}
+```
+
+**Secrets requeridos**: `CD_HOST`, `CD_USERNAME`, `CD_SSH_PRIVATE_KEY`.
+**Variables opcionales**: `CD_DEPLOY_PATH` (default `/opt/facial-attributes`).
+
+---
+
 ## Decisiones pendientes resumen
 
 | Decisión | Fase afectada | Estado |
@@ -382,11 +524,13 @@ Cada tarea referencia la sección de especificación que la respalda. Las decisi
 | Arquitectura del modelo | Fase 4 | Completada (ResNet) |
 | Función de pérdida | Fase 4 | Completada (BCE Loss) |
 | Métricas de evaluación | Fase 6 | Pendiente |
-| Interfaz de aplicación | Fase 8 | Pendiente |
+| Interfaz de aplicación | Fase 12 | En progreso (FastAPI + Frontend) |
 | Estrategia de monitoreo | Fase 9 | Pendiente |
 | Implementación de Model Registry | Fase 10 | Pendiente |
 | Frecuencia de reentrenamiento | Fase 11 | Pendiente |
+| Trigger de CD | Fase 14 | Completada (repository_dispatch) |
+| Destino de deploy | Fase 14 | Completada (GHCR + SSH) |
 
 ---
 
-*Última actualización: 2026-09-02*
+*Última actualización: 2026-09-05*
