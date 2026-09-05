@@ -51,7 +51,7 @@ def _collect(annotations_file: Path, images_dir: Path, output_dir: Path) -> None
             if i % 2000 == 0 and i > 0:
                 print(f"  {i}/{n}...", flush=True)
 
-    print(f"Todas las imagenes cacheadas como .npy", flush=True)
+    print("Todas las imagenes cacheadas como .npy", flush=True)
 
 
 def build_cache(
@@ -80,9 +80,14 @@ def build_cache(
     # Guardar atributos como tensor
     df = pd.read_csv(annotations_file)
     attr_cols = [c for c in df.columns if c.startswith("Atr_")]
-    attr_tensor = torch.tensor(df[attr_cols].values.astype("float32"), dtype=torch.float32)
+    attr_tensor = torch.tensor(
+        df[attr_cols].values.astype("float32"), dtype=torch.float32
+    )
     torch.save(attr_tensor, output_dir / "attributes.pt")
-    print(f"Atributos guardados en {output_dir / 'attributes.pt'}: {attr_tensor.shape}", flush=True)
+    print(
+        f"Atributos guardados en {output_dir / 'attributes.pt'}: {attr_tensor.shape}",
+        flush=True,
+    )
 
 
 if __name__ == "__main__":
@@ -90,9 +95,7 @@ if __name__ == "__main__":
 
     annotations = Path("data/processed/celeba_subset_40000.csv")
     images = Path("data/raw/images")
-    default_out = Path(
-        os.environ.get("CELEBA_CACHE_DIR", "data/processed/cache_40000")
-    )
+    default_out = Path(os.environ.get("CELEBA_CACHE_DIR", "data/processed/cache_40000"))
     build_cache(
         annotations_file=annotations,
         images_dir=images,

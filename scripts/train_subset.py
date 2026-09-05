@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import time
 from dataclasses import asdict
 from pathlib import Path
@@ -13,8 +14,10 @@ from facial_attributes.model.classifier import FacialAttributeClassifier, ModelC
 from facial_attributes.model.losses import MultilabelLoss
 from facial_attributes.training.checkpoint import CheckpointManager
 from facial_attributes.training.config import set_seed
-from facial_attributes.training.dataset import CachedAttributeDataset, FacialAttributeDataset
-import os
+from facial_attributes.training.dataset import (
+    CachedAttributeDataset,
+    FacialAttributeDataset,
+)
 
 
 class SubsetTrainer:
@@ -54,11 +57,15 @@ class SubsetTrainer:
             Historial de entrenamiento.
         """
         if cache_dir is not None and (cache_dir / "npy").exists():
-            ds: FacialAttributeDataset | CachedAttributeDataset = CachedAttributeDataset(
-                annotations_file=annotations_file,
-                cache_dir=cache_dir,
+            ds: FacialAttributeDataset | CachedAttributeDataset = (
+                CachedAttributeDataset(
+                    annotations_file=annotations_file,
+                    cache_dir=cache_dir,
+                )
             )
-            print(f"Usando cache con {len(ds)} instancias desde {cache_dir}", flush=True)
+            print(
+                f"Usando cache con {len(ds)} instancias desde {cache_dir}", flush=True
+            )
         else:
             ds = FacialAttributeDataset(
                 annotations_file=annotations_file,
@@ -86,7 +93,10 @@ class SubsetTrainer:
         )
 
         num_attributes = ds.get_num_attributes()
-        print(f"Atributos: {num_attributes}, Train: {train_size}, Val: {val_size}, Test: {test_size}", flush=True)
+        print(
+            f"Atributos: {num_attributes}, Train: {train_size}, Val: {val_size}, Test: {test_size}",
+            flush=True,
+        )
 
         model_config = ModelConfig(
             num_attributes=num_attributes,
@@ -134,7 +144,9 @@ class SubsetTrainer:
             val_loss, val_preds, val_targets = 0.0, [], []
             with torch.no_grad():
                 for images, attributes in val_loader:
-                    images, attributes = images.to(self.device), attributes.to(self.device)
+                    images, attributes = images.to(self.device), attributes.to(
+                        self.device
+                    )
                     outputs = model(images)
                     val_loss += loss_fn(outputs, attributes).item()
                     val_preds.append(torch.sigmoid(outputs).cpu())
@@ -172,19 +184,26 @@ class SubsetTrainer:
             )
 
         print("\nEntrenamiento completado.", flush=True)
-        print(f"Mejor modelo guardado en: {Path(checkpoint_dir) / 'best_model.pt'}", flush=True)
+        print(
+            f"Mejor modelo guardado en: {Path(checkpoint_dir) / 'best_model.pt'}",
+            flush=True,
+        )
         return history
 
     def _build_transform(self):
         """Construir transformación coherente con la inferencia."""
         from torchvision import transforms
 
-        return transforms.Compose([
-            transforms.Resize((224, 224)),
-            transforms.ToTensor(),
-        ])
+        return transforms.Compose(
+            [
+                transforms.Resize((224, 224)),
+                transforms.ToTensor(),
+            ]
+        )
 
-    def _evaluate(self, preds: list[torch.Tensor], targets: list[torch.Tensor]) -> dict[str, float]:
+    def _evaluate(
+        self, preds: list[torch.Tensor], targets: list[torch.Tensor]
+    ) -> dict[str, float]:
         """Calcular métricas en validación."""
         preds = torch.cat(preds)
         targets = torch.cat(targets)
@@ -202,7 +221,12 @@ class SubsetTrainer:
         recall = tp / max(tp + fn, 1)
         f1 = 2 * precision * recall / max(precision + recall, 1e-6)
 
-        return {"accuracy": accuracy, "precision": precision, "recall": recall, "f1": f1}
+        return {
+            "accuracy": accuracy,
+            "precision": precision,
+            "recall": recall,
+            "f1": f1,
+        }
 
 
 if __name__ == "__main__":
@@ -216,5 +240,7 @@ if __name__ == "__main__":
         num_workers=0,
         checkpoint_dir="checkpoints_40k",
         resume=False,
-        cache_dir=Path(os.environ.get("CELEBA_CACHE_DIR", "data/processed/cache_40000")),
+        cache_dir=Path(
+            os.environ.get("CELEBA_CACHE_DIR", "data/processed/cache_40000")
+        ),
     )

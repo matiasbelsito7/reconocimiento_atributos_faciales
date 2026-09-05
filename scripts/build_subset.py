@@ -33,14 +33,16 @@ def build_subset(
     per_class = max(1, sample_size // n_classes)
 
     samples = []
-    for cls, count in class_counts.items():
+    for cls, _count in class_counts.items():
         cls_df = df[df[stratify_col] == cls]
         n_sample = min(per_class, len(cls_df))
-        samples.append(
-            cls_df.sample(n=n_sample, random_state=random_state)
-        )
+        samples.append(cls_df.sample(n=n_sample, random_state=random_state))
 
-    subset = pd.concat(samples).sample(frac=1.0, random_state=random_state).reset_index(drop=True)
+    subset = (
+        pd.concat(samples)
+        .sample(frac=1.0, random_state=random_state)
+        .reset_index(drop=True)
+    )
 
     output_file.parent.mkdir(parents=True, exist_ok=True)
     subset.to_csv(output_file, index=False)
