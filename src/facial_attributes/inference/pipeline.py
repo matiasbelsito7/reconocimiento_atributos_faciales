@@ -1,7 +1,7 @@
 """Pipeline completo de inferencia."""
 
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import torch
@@ -26,6 +26,19 @@ class InferenceConfig:
     num_attributes: int = 40
     backbone: str = "resnet18"
     attribute_names: list[str] | None = None
+    per_attribute_thresholds: dict[str, float] = field(default_factory=dict)
+    per_attribute_margins: dict[str, float] = field(default_factory=dict)
+    margin_default: float = 0.0
+
+
+@dataclass
+class AttributeDecision:
+    """Decisión binaria para un atributo."""
+
+    score: float
+    threshold: float
+    margin: float
+    decision: str
 
 
 @dataclass
@@ -35,6 +48,7 @@ class FacePrediction:
     bbox: dict[str, int]
     attributes: dict[str, float]
     confidence: float
+    attribute_decisions: dict[str, AttributeDecision] = field(default_factory=dict)
 
 
 @dataclass
@@ -144,13 +158,30 @@ class InferencePipeline:
                     scores = self._model.predict_proba(tensor)
                     scores_np = scores.cpu().numpy()[0]
 
+                names = (
+                    self.config.attribute_names
+                    if self.config.attribute_names
+                    else [f"attr_{i}" for i in range(len(scores_np))]
+                )
+
                 attributes = {}
-                if self.config.attribute_names:
-                    for i, name in enumerate(self.config.attribute_names):
-                        attributes[name] = float(scores_np[i])
-                else:
-                    for i, score in enumerate(scores_np):
-                        attributes[f"attr_{i}"] = float(score)
+                attribute_decisions: dict[str, AttributeDecision] = {}
+                for i, name in enumerate(names):
+                    score = float(scores_np[i])
+                    attributes[name] = score
+
+                    threshold = self.config.per_attribute_thresholds.get(
+                        name, self.config.threshold
+                    )
+                    margin = self.config.per_attribute_margins.get(
+                        name, self.config.margin_default
+                    )
+                    attribute_decisions[name] = AttributeDecision(
+                        score=score,
+                        threshold=threshold,
+                        margin=margin,
+                        decision=self._decide(score, threshold, margin),
+                    )
 
                 predictions.append(
                     FacePrediction(
@@ -162,6 +193,7 @@ class InferencePipeline:
                         },
                         attributes=attributes,
                         confidence=face.bounding_box.confidence,
+                        attribute_decisions=attribute_decisions,
                     )
                 )
 
@@ -207,3 +239,16 @@ class InferencePipeline:
             Lista de resultados de inferencia.
         """
         return [self.predict(img) for img in images]
+
+    @staticmethod
+    def _decide(score: float, threshold: float, margin: float) -> str:
+        """Decidir Sí/No/Incierto para un atributo.
+
+        Fuera de la banda ``[threshold - margin, threshold + margin]`` la
+        decisión es clara; dentro de ella no se puede garantizar la clase.
+        """
+        if score > threshold + margin:
+            return "si"
+        if score < threshold - margin:
+            return "no"
+        return "incierto"

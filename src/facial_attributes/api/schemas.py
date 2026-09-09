@@ -1,5 +1,7 @@
 """Modelos Pydantic para request/response de la API."""
 
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 
@@ -12,12 +14,27 @@ class BoundingBoxResponse(BaseModel):
     h: int = Field(..., description="Alto del bounding box")
 
 
+class AttributeDecision(BaseModel):
+    """Decisión binaria de un atributo."""
+
+    score: float = Field(..., description="Score predicho (0.0 - 1.0)")
+    threshold: float = Field(..., description="Umbral aplicado para la decisión")
+    margin: float = Field(..., description="Margen de incerteza aplicado")
+    decision: Literal["si", "no", "incierto"] = Field(
+        ..., description="Decisión binaria según el umbral y el margen"
+    )
+
+
 class FaceResult(BaseModel):
     """Predicción para un rostro individual."""
 
     bbox: BoundingBoxResponse = Field(..., description="Bounding box del rostro")
     attributes: dict[str, float] = Field(
         ..., description="Scores por atributo (0.0 - 1.0)"
+    )
+    attribute_decisions: dict[str, AttributeDecision] = Field(
+        default_factory=dict,
+        description="Decisiones Sí/No/Incierto por atributo",
     )
     confidence: float = Field(..., description="Confianza de la detección")
 

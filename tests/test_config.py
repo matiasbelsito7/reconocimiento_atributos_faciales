@@ -108,6 +108,9 @@ def sample_inference_yaml(tmp_path: Path) -> Path:
     config = {
         "thresholds": {
             "default": 0.5,
+            "per_attribute": {"glasses": 0.3},
+            "margin_default": 0.05,
+            "margins_per_attribute": {"glasses": 0.12},
         },
         "face_detection": {
             "model": "opencv_dnn",
@@ -232,13 +235,23 @@ class TestInferenceConfig:
 
         assert config.thresholds.default == 0.5
         assert config.face_detection.model == "opencv_dnn"
+        assert config.thresholds.margin_default == 0.0
+        assert config.thresholds.margins_per_attribute == {}
 
     def test_custom_config(self) -> None:
         """Test de configuración personalizada."""
-        thresholds = ThresholdsConfig(default=0.7)
+        thresholds = ThresholdsConfig(
+            default=0.7,
+            per_attribute={"glasses": 0.3},
+            margin_default=0.05,
+            margins_per_attribute={"glasses": 0.12},
+        )
         config = InferenceConfig(thresholds=thresholds)
 
         assert config.thresholds.default == 0.7
+        assert config.thresholds.per_attribute == {"glasses": 0.3}
+        assert config.thresholds.margin_default == 0.05
+        assert config.thresholds.margins_per_attribute == {"glasses": 0.12}
 
 
 class TestDatasetsConfig:
@@ -299,6 +312,9 @@ class TestConfigLoader:
 
         assert isinstance(config, InferenceConfig)
         assert config.thresholds.default == 0.5
+        assert config.thresholds.per_attribute == {"glasses": 0.3}
+        assert config.thresholds.margin_default == 0.05
+        assert config.thresholds.margins_per_attribute == {"glasses": 0.12}
 
     def test_load_datasets(self, tmp_path: Path, sample_datasets_yaml: Path) -> None:
         """Test de carga de configuración de datasets."""

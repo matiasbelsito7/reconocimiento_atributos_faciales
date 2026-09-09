@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
+from facial_attributes.config.loader import ConfigLoader
 from facial_attributes.inference.pipeline import InferenceConfig, InferencePipeline
 
 logger = logging.getLogger(__name__)
@@ -115,6 +116,31 @@ def get_pipeline() -> InferencePipeline:
     return _PIPELINE
 
 
+def _load_thresholds_config() -> (
+    tuple[float, dict[str, float], dict[str, float], float]
+):
+    """Cargar thresholds y márgenes desde config/inference.yaml.
+
+    Returns:
+        Tupla (default, per_attribute, margins_per_attribute, margin_default).
+    """
+    try:
+        inference_config = ConfigLoader().load_inference()
+    except Exception:
+        logger.warning(
+            "No se pudo cargar config/inference.yaml. Usando thresholds por defecto."
+        )
+        return 0.5, {}, {}, 0.0
+
+    thresholds = inference_config.thresholds
+    return (
+        thresholds.default,
+        thresholds.per_attribute,
+        thresholds.margins_per_attribute,
+        thresholds.margin_default,
+    )
+
+
 def init_pipeline(model_path: str | None = None) -> InferencePipeline:
     """Inicializar el pipeline de inferencia como singleton.
 
@@ -137,11 +163,22 @@ def init_pipeline(model_path: str | None = None) -> InferencePipeline:
                 default_path,
             )
 
+    (
+        default_threshold,
+        per_attribute_thresholds,
+        per_attribute_margins,
+        margin_default,
+    ) = _load_thresholds_config()
+
     config = InferenceConfig(
         device="auto",
         model_path=model_path,
         num_attributes=40,
         attribute_names=CELEBA_ATTRIBUTE_NAMES,
+        threshold=default_threshold,
+        per_attribute_thresholds=per_attribute_thresholds,
+        per_attribute_margins=per_attribute_margins,
+        margin_default=margin_default,
     )
 
     _PIPELINE = InferencePipeline(config)

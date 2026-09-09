@@ -12,7 +12,11 @@ from facial_attributes.evaluation.metrics import (
     EvaluationMetrics,
     MetricsCalculator,
 )
-from facial_attributes.evaluation.thresholds import ThresholdOptimizer, ThresholdResult
+from facial_attributes.evaluation.thresholds import (
+    ThresholdOptimizer,
+    ThresholdResult,
+    ThresholdWithMargin,
+)
 
 
 @pytest.fixture
@@ -190,6 +194,76 @@ class TestThresholdOptimizer:
 
         assert pred_binary.shape == predictions.shape
         assert set(np.unique(pred_binary)).issubset({0, 1})
+
+    def test_estimate_margins(
+        self,
+        sample_predictions: tuple[np.ndarray, np.ndarray],
+        sample_attribute_names: list[str],
+    ) -> None:
+        """Test de estimación de márgenes de incerteza."""
+        predictions, targets = sample_predictions
+        optimizer = ThresholdOptimizer()
+
+        results = optimizer.optimize(predictions, targets, sample_attribute_names)
+        with_margins = optimizer.estimate_margins(predictions, targets, results)
+
+        assert len(with_margins) == len(sample_attribute_names)
+        for result, original in zip(with_margins, results, strict=True):
+            assert isinstance(result, ThresholdWithMargin)
+            assert 0.0 <= result.margin <= 0.5
+            assert result.threshold == original.threshold
+
+    def test_estimate_margins_separated_classes(self) -> None:
+        """Test de márgenes con clases bien separadas."""
+        optimizer = ThresholdOptimizer()
+        predictions = np.array([[0.9, 0.1], [0.8, 0.2]])
+        targets = np.array([[1, 0], [1, 0]])
+        results = [ThresholdResult(attribute="smiling", threshold=0.5, f1_score=1.0)]
+
+        with_margins = optimizer.estimate_margins(predictions, targets, results)
+
+        assert with_margins[0].margin == 0.0
+
+    def test_estimate_margins_near_threshold(self) -> None:
+        """Test de margen con muestras no confiables cerca del umbral."""
+        optimizer = ThresholdOptimizer()
+        predictions = np.array([[0.55], [0.90], [0.45], [0.10]])
+        targets = np.array([[0], [1], [1], [0]])
+        results = [ThresholdResult(attribute="glasses", threshold=0.5, f1_score=0.5)]
+
+        with_margins = optimizer.estimate_margins(
+            predictions, targets, results, step=0.01, reliability=0.65
+        )
+
+        assert with_margins[0].margin == 0.05
+
+    def test_estimate_margins_fallback(self) -> None:
+        """Test de margen por defecto cuando nunca se alcanza confiabilidad."""
+        optimizer = ThresholdOptimizer()
+        predictions = np.array([[0.9], [0.8], [0.2], [0.1]])
+        targets = np.array([[0], [0], [0], [0]])
+        results = [ThresholdResult(attribute="hat", threshold=0.5, f1_score=0.0)]
+
+        with_margins = optimizer.estimate_margins(
+            predictions, targets, results, max_margin=0.5
+        )
+
+        assert with_margins[0].margin == 0.5
+
+    def test_apply_thresholds_with_margin(self) -> None:
+        """Test de aplicación de thresholds con margen ternario."""
+        optimizer = ThresholdOptimizer()
+        predictions = np.array([[0.9, 0.5, 0.2]])
+        thresholds = [
+            ThresholdWithMargin(attribute="smiling", threshold=0.5, margin=0.0),
+            ThresholdWithMargin(attribute="glasses", threshold=0.5, margin=0.1),
+            ThresholdWithMargin(attribute="hat", threshold=0.5, margin=0.1),
+        ]
+
+        decisions = optimizer.apply_thresholds_with_margin(predictions, thresholds)
+
+        assert decisions.shape == predictions.shape
+        assert decisions.tolist() == [[1, 2, 0]]
 
 
 class TestEvaluator:

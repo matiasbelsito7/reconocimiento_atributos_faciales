@@ -194,9 +194,24 @@ function showResults(data) {
         const displayName = getDisplayName(name);
         const scoreClass = score >= 0.7 ? "attr-high" : score >= 0.3 ? "attr-medium" : "attr-low";
 
+        const decisionInfo = face.attribute_decisions ? face.attribute_decisions[name] : null;
+        let badgeHtml = "";
+        if (decisionInfo) {
+            const label = decisionInfo.decision === "si"
+                ? "Sí"
+                : decisionInfo.decision === "no"
+                    ? "No"
+                    : "?";
+            const detail = `Umbral ${(decisionInfo.threshold * 100).toFixed(0)}% · Margen \u00b1${(decisionInfo.margin * 100).toFixed(0)}%`;
+            badgeHtml = `<span class="attr-decision attr-decision-${decisionInfo.decision}" title="${detail}">${label}</span>`;
+        }
+
         card.innerHTML = `
             <span class="attr-name" title="${name}">${displayName}</span>
-            <span class="attr-score ${scoreClass}">${(score * 100).toFixed(0)}%</span>
+            <span class="attr-right">
+                ${badgeHtml}
+                <span class="attr-score ${scoreClass}">${(score * 100).toFixed(0)}%</span>
+            </span>
         `;
         attributesGrid.appendChild(card);
     }

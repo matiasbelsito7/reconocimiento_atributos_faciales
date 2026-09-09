@@ -282,6 +282,12 @@ Cada tarea referencia la sección de especificación que la respalda. Las decisi
 - **Estado**: completada
 - **Descripción**: Tests de integración del pipeline completo.
 
+### T-7.5: Clasificación binaria con umbral e incerteza
+- **Especificación**: specs §9.4 (Formato de predicciones), specs §5.4 (Comportamiento esperado)
+- **Prioridad**: alta
+- **Estado**: completada
+- **Descripción**: Agregar decisión binaria Sí/No por atributo en la salida de inferencia usando umbral global y per-atributo (`threshold`), con una zona de incerteza definida por un margen por atributo (`margin`). Si `|score - threshold| <= margin` la decisión es "incierto" (no se puede garantizar la clase). El margen se estima offline sobre validación (zona de indecisión de la curva de calibración) y se expone en `attribute_decisions` junto con `attributes` (scores continuos intactos). Se propaga por API y frontend y se registran thresholds/márgenes en `config/inference.yaml`.
+
 ---
 
 ## Fase 8: Configuration Module
@@ -533,4 +539,4 @@ Cada tarea referencia la sección de especificación que la respalda. Las decisi
 
 ---
 
-*Última actualización: 2026-09-05*
+*Última actualización: 2026-09-08*

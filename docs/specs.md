@@ -448,6 +448,26 @@ La evaluación es un proceso independiente del entrenamiento que puede ejecutars
         "smiling": 0.92,
         "glasses": 0.15,
         "beard": 0.03
+      },
+      "attribute_decisions": {
+        "smiling": {
+          "score": 0.92,
+          "threshold": 0.5,
+          "margin": 0.04,
+          "decision": "si"
+        },
+        "glasses": {
+          "score": 0.15,
+          "threshold": 0.48,
+          "margin": 0.06,
+          "decision": "no"
+        },
+        "beard": {
+          "score": 0.52,
+          "threshold": 0.5,
+          "margin": 0.05,
+          "decision": "incierto"
+        }
       }
     }
   ]
@@ -455,6 +475,17 @@ La evaluación es un proceso independiente del entrenamiento que puede ejecutars
 ```
 
 *Los nombres de atributos son ejemplos; los reales dependen del conjunto definido.*
+
+#### Decisiones binarias e incerteza
+
+- `attributes` conserva los scores continuos (probabilidad [0, 1]) por atributo.
+- `attribute_decisions` agrega la interpretación binaria por atributo:
+  - `decision: "si"` → `score > threshold + margin`.
+  - `decision: "no"` → `score < threshold - margin`.
+  - `decision: "incierto"` → `|score - threshold| <= margin`. Cuando el umbral queda contenido en la zona de incerteza del atributo no se puede garantizar la clase.
+- Cada atributo puede tener su propio `threshold` y `margin` (configuración en `config/inference.yaml`).
+- El `margin` se estima de forma **offline** sobre datos de validación (zona de indecisión de la curva de calibración) y nunca se calcula en inferencia; refleja el error asociado a la predicción de cada atributo alrededor de su umbral.
+- Con `margin = 0` la decisión es binaria pura (equivalente al comportamiento sin incerteza) y nunca se emite `incierto` salvo en la igualdad exacta `score == threshold`.
 
 ### 9.5 Manejo de errores
 

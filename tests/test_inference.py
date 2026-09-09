@@ -8,6 +8,7 @@ import torch
 from PIL import Image, ImageDraw
 
 from facial_attributes.inference.pipeline import (
+    AttributeDecision,
     FacePrediction,
     InferenceConfig,
     InferencePipeline,
@@ -92,6 +93,25 @@ class TestFacePrediction:
         assert prediction.bbox["x"] == 10
         assert prediction.attributes["smiling"] == 0.92
         assert prediction.confidence == 0.95
+        assert prediction.attribute_decisions == {}
+
+    def test_face_prediction_with_decisions(self) -> None:
+        """Test de FacePrediction con decisiones."""
+        prediction = FacePrediction(
+            bbox={"x": 10, "y": 20, "w": 100, "h": 150},
+            attributes={"smiling": 0.92},
+            confidence=0.95,
+            attribute_decisions={
+                "smiling": AttributeDecision(
+                    score=0.92,
+                    threshold=0.5,
+                    margin=0.0,
+                    decision="si",
+                )
+            },
+        )
+
+        assert prediction.attribute_decisions["smiling"].decision == "si"
 
 
 class TestInferenceResult:
@@ -196,6 +216,99 @@ class TestInferencePipeline:
 
                 assert result.error is None
                 assert result.num_faces_detected == 1
+
+    def test_pipeline_with_margins(self, sample_pil_image: Image.Image) -> None:
+        """Test de pipeline con thresholds y márgenes por atributo."""
+        config = InferenceConfig(
+            device="cpu",
+            threshold=0.5,
+            attribute_names=["smiling", "glasses", "beard"],
+            per_attribute_thresholds={"glasses": 0.5},
+            per_attribute_margins={"glasses": 0.1},
+        )
+        pipeline = InferencePipeline(config)
+
+        mock_model = MagicMock()
+        mock_model.predict_proba.return_value = torch.tensor([[0.9, 0.52, 0.2]])
+        pipeline._model = mock_model
+
+        with patch.object(pipeline._face_detector, "detect") as mock_detect:
+            mock_detect.return_value = MagicMock(
+                faces=[MagicMock(x=100, y=80, width=100, height=140, confidence=0.95)],
+                image_size=(300, 300),
+                num_faces=1,
+            )
+
+            with patch.object(
+                pipeline._face_extractor, "extract_faces"
+            ) as mock_extract:
+                mock_face = MagicMock()
+                mock_face.bounding_box = MagicMock(
+                    x=100, y=80, width=100, height=140, confidence=0.95
+                )
+                mock_face.image = Image.new("RGB", (224, 224), color=(128, 128, 128))
+                mock_extract.return_value = [mock_face]
+
+                result = pipeline.predict(sample_pil_image)
+
+                assert result.faces[0].attributes == pytest.approx(
+                    {
+                        "smiling": 0.9,
+                        "glasses": 0.52,
+                        "beard": 0.2,
+                    }
+                )
+
+                decisions = result.faces[0].attribute_decisions
+                assert decisions["smiling"].decision == "si"
+                assert decisions["glasses"].decision == "incierto"
+                assert decisions["beard"].decision == "no"
+                assert decisions["glasses"].threshold == 0.5
+                assert decisions["glasses"].margin == 0.1
+
+    def test_pipeline_default_decisions(self, sample_pil_image: Image.Image) -> None:
+        """Test de pipeline con decisiones por defecto sin márgenes."""
+        config = InferenceConfig(
+            device="cpu",
+            attribute_names=["smiling", "glasses"],
+        )
+        pipeline = InferencePipeline(config)
+
+        mock_model = MagicMock()
+        mock_model.predict_proba.return_value = torch.tensor([[0.9, 0.1]])
+        pipeline._model = mock_model
+
+        with patch.object(pipeline._face_detector, "detect") as mock_detect:
+            mock_detect.return_value = MagicMock(
+                faces=[MagicMock(x=100, y=80, width=100, height=140, confidence=0.95)],
+                image_size=(300, 300),
+                num_faces=1,
+            )
+
+            with patch.object(
+                pipeline._face_extractor, "extract_faces"
+            ) as mock_extract:
+                mock_face = MagicMock()
+                mock_face.bounding_box = MagicMock(
+                    x=100, y=80, width=100, height=140, confidence=0.95
+                )
+                mock_face.image = Image.new("RGB", (224, 224), color=(128, 128, 128))
+                mock_extract.return_value = [mock_face]
+
+                result = pipeline.predict(sample_pil_image)
+
+                decisions = result.faces[0].attribute_decisions
+                assert decisions["smiling"].decision == "si"
+                assert decisions["glasses"].decision == "no"
+
+    def test_decide_boundaries(self) -> None:
+        """Test de la lógica de decisión Sí/No/Incierto."""
+        assert InferencePipeline._decide(0.9, 0.5, 0.1) == "si"
+        assert InferencePipeline._decide(0.2, 0.5, 0.1) == "no"
+        assert InferencePipeline._decide(0.55, 0.5, 0.1) == "incierto"
+        assert InferencePipeline._decide(0.45, 0.5, 0.1) == "incierto"
+        assert InferencePipeline._decide(0.5, 0.5, 0.0) == "incierto"
+        assert InferencePipeline._decide(0.51, 0.5, 0.0) == "si"
 
 
 class TestInferenceIntegration:

@@ -168,6 +168,59 @@ class TestSchemas:
         assert resp.status == "ok"
         assert resp.model_loaded is False
 
+    def test_attribute_decision_creation(self) -> None:
+        from facial_attributes.api.schemas import AttributeDecision
+
+        decision = AttributeDecision(
+            score=0.88,
+            threshold=0.5,
+            margin=0.05,
+            decision="si",
+        )
+        assert decision.score == 0.88
+        assert decision.decision == "si"
+        assert decision.model_dump()["decision"] == "si"
+
+    def test_attribute_decision_rejects_invalid_decision(self) -> None:
+        from pydantic import ValidationError
+
+        from facial_attributes.api.schemas import AttributeDecision
+
+        with pytest.raises(ValidationError):
+            AttributeDecision(
+                score=0.5,
+                threshold=0.5,
+                margin=0.0,
+                decision="maybe",
+            )
+
+    def test_face_result_decisions_optional(self) -> None:
+        from facial_attributes.api.schemas import BoundingBoxResponse, FaceResult
+
+        face = FaceResult(
+            bbox=BoundingBoxResponse(x=0, y=0, w=100, h=100),
+            attributes={"Eyeglasses": 0.52},
+            confidence=0.95,
+        )
+        assert face.attribute_decisions == {}
+
+        face_with_decisions = FaceResult(
+            bbox=BoundingBoxResponse(x=0, y=0, w=100, h=100),
+            attributes={"Eyeglasses": 0.52},
+            confidence=0.95,
+            attribute_decisions={
+                "Eyeglasses": {
+                    "score": 0.52,
+                    "threshold": 0.5,
+                    "margin": 0.1,
+                    "decision": "incierto",
+                }
+            },
+        )
+        assert (
+            face_with_decisions.attribute_decisions["Eyeglasses"].decision == "incierto"
+        )
+
 
 class TestDependencies:
     """Tests para el módulo de dependencias."""

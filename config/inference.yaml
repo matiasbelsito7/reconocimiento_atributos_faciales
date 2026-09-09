@@ -9,6 +9,15 @@ thresholds:
   # smiling: 0.7
   # glasses: 0.3
 
+  # Margen de incerteza por defecto (0.0 = sin incerteza)
+  margin_default: 0.0
+  # Márgenes por atributo estimados en validación. Cuando un score cae en
+  # [umbral - margen, umbral + margen] la decisión es "incierto".
+  margins_per_attribute: {}
+  # Ejemplo:
+  # smiling: 0.05
+  # glasses: 0.12
+
 # Configuración de face detection
 face_detection:
   model: opencv_dnn  # opencv_dnn | mtcnn | retinaface

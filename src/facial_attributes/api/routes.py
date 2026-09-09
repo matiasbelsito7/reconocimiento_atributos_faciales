@@ -11,6 +11,7 @@ from facial_attributes.api.dependencies import (
     get_pipeline,
 )
 from facial_attributes.api.schemas import (
+    AttributeDecision,
     AttributeInfo,
     AttributesListResponse,
     BoundingBoxResponse,
@@ -102,6 +103,15 @@ async def predict(file: UploadFile = File(...)) -> PredictResponse:  # noqa: B00
                     h=face.bbox["h"],
                 ),
                 attributes=face.attributes,
+                attribute_decisions={
+                    name: AttributeDecision(
+                        score=decision.score,
+                        threshold=decision.threshold,
+                        margin=decision.margin,
+                        decision=decision.decision,
+                    )
+                    for name, decision in face.attribute_decisions.items()
+                },
                 confidence=face.confidence,
             )
         )

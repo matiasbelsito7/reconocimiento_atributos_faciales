@@ -170,6 +170,8 @@ class ThresholdsConfig:
 
     default: float = 0.5
     per_attribute: dict[str, float] = field(default_factory=dict)
+    margin_default: float = 0.0
+    margins_per_attribute: dict[str, float] = field(default_factory=dict)
 
 
 @dataclass
