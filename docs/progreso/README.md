@@ -31,4 +31,4 @@ Cada archivo documenta:
 
 ---
 
-*Última actualización: 2026-09-05*
+*Última actualización: 2026-09-09*

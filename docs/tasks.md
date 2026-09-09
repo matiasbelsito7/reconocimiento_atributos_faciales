@@ -466,7 +466,7 @@ Cada tarea referencia la sección de especificación que la respalda. Las decisi
 - **Especificación**: specs §4.1 (Detección de rostros: manejar múltiples rostros), specs §9.3-9.4 (Salida y formato de predicciones con bbox por cada rostro)
 - **Prioridad**: alta
 - **Estado**: completada
-- **Descripción**: Mostrar predicciones de **todas** las caras detectadas en la imagen, no solo la primera. Agregar pestañas ("Cara 1", "Cara 2", ...) que permiten alternar entre las predicciones de cada rostro. Dibujar bounding boxes numerados sobre la imagen de resultados usando un `<canvas>` superpuesto. Seleccionar la cara más grande por defecto. Actualizar HTML (`<canvas>`, `<div id="face-tabs">`), CSS (estilos de tabs y canvas overlay) y JS (`drawBoundingBoxes`, `renderFaceTabs`, `renderFaceAttributes`, `findLargestFaceIndex`, redibujo en resize). `FaceProcessingPipeline.use_largest_face_only` se mantiene en `True` por decisión del usuario.
+- **Descripción**: Mostrar predicciones de **todas** las caras detectadas en la imagen, no solo la primera. Agregar pestañas ("Cara 1", "Cara 2", ...) que permiten alternar entre las predicciones de cada rostro. Dibujar bounding boxes numerados sobre la imagen de resultados usando un `<canvas>` superpuesto. Seleccionar la cara más grande por defecto. Actualizar HTML (`<canvas>`, `<div id="face-tabs">`), CSS (estilos de tabs y canvas overlay) y JS (`drawBoundingBoxes`, `renderFaceTabs`, `renderFaceAttributes`, `findLargestFaceIndex`, redibujo en resize). Agregar cache-busting `?v=2` en assets para evitar que el navegador muestre versiones cacheadas. `FaceProcessingPipeline.use_largest_face_only` se mantiene en `True` por decisión del usuario.
 
 ---
 
