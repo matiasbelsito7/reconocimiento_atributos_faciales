@@ -33,10 +33,14 @@ const btnClear = document.getElementById("btn-clear");
 const resultFaces = document.getElementById("result-faces");
 const resultTime = document.getElementById("result-time");
 const resultsImage = document.getElementById("results-image");
+const resultsCanvas = document.getElementById("results-canvas");
+const faceTabs = document.getElementById("face-tabs");
 const attributesGrid = document.getElementById("attributes-grid");
 
 let currentFile = null;
 let attributes = [];
+let currentResult = null;
+let activeFaceIndex = 0;
 
 /* --- Init --- */
 async function init() {
@@ -164,6 +168,7 @@ async function predict() {
 
 /* --- Results --- */
 function showResults(data) {
+    hideError();
     resultsPlaceholder.style.display = "none";
     resultsContent.style.display = "";
 
@@ -173,6 +178,8 @@ function showResults(data) {
     resultsImage.src = previewImage.src;
 
     attributesGrid.innerHTML = "";
+    faceTabs.innerHTML = "";
+    currentResult = data;
 
     if (data.error) {
         showError(data.error);
@@ -184,7 +191,97 @@ function showResults(data) {
         return;
     }
 
-    const face = data.faces[0];
+    activeFaceIndex = findLargestFaceIndex(data.faces);
+    renderFaceTabs(data.faces.length);
+    resultsImage.onload = drawBoundingBoxes;
+    drawBoundingBoxes();
+    renderFaceAttributes(activeFaceIndex);
+}
+
+function findLargestFaceIndex(faces) {
+    let largestIndex = 0;
+    let largestArea = -1;
+    for (let i = 0; i < faces.length; i++) {
+        const area = faces[i].bbox.w * faces[i].bbox.h;
+        if (area > largestArea) {
+            largestArea = area;
+            largestIndex = i;
+        }
+    }
+    return largestIndex;
+}
+
+function renderFaceTabs(count) {
+    faceTabs.innerHTML = "";
+    if (count <= 1) return;
+
+    for (let i = 0; i < count; i++) {
+        const tab = document.createElement("button");
+        tab.className = i === activeFaceIndex ? "face-tab active" : "face-tab";
+        tab.textContent = `Cara ${i + 1}`;
+        tab.addEventListener("click", () => {
+            activeFaceIndex = i;
+            renderFaceTabs(count);
+            drawBoundingBoxes();
+            renderFaceAttributes(i);
+        });
+        faceTabs.appendChild(tab);
+    }
+}
+
+function drawBoundingBoxes() {
+    if (!currentResult || !resultsImage.naturalWidth) return;
+
+    const canvas = resultsCanvas;
+    const ctx = canvas.getContext("2d");
+    const imgW = resultsImage.clientWidth;
+    const imgH = resultsImage.clientHeight;
+
+    canvas.width = imgW;
+    canvas.height = imgH;
+    ctx.clearRect(0, 0, imgW, imgH);
+
+    const scale = Math.min(
+        imgW / resultsImage.naturalWidth,
+        imgH / resultsImage.naturalHeight
+    );
+    const offsetX = (imgW - resultsImage.naturalWidth * scale) / 2;
+    const offsetY = (imgH - resultsImage.naturalHeight * scale) / 2;
+
+    currentResult.faces.forEach((face, i) => {
+        const box = face.bbox;
+        const x = offsetX + box.x * scale;
+        const y = offsetY + box.y * scale;
+        const w = box.w * scale;
+        const h = box.h * scale;
+        const isActive = i === activeFaceIndex;
+
+        ctx.strokeStyle = isActive ? "#6366f1" : "rgba(139, 143, 163, 0.6)";
+        ctx.lineWidth = isActive ? 3 : 1.5;
+        ctx.strokeRect(x, y, w, h);
+
+        const label = `${i + 1}`;
+        const labelH = isActive ? 20 : 16;
+        const padX = 5;
+        ctx.font = `bold ${isActive ? 12 : 10}px sans-serif`;
+        const textW = ctx.measureText(label).width;
+        const labelX = x;
+        const labelY = y - labelH - 2 > 0 ? y - labelH - 2 : y;
+        ctx.fillStyle = isActive ? "#6366f1" : "rgba(139, 143, 163, 0.85)";
+        ctx.fillRect(labelX, labelY, textW + padX * 2, labelH);
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(label, labelX + (textW + padX * 2) / 2, labelY + labelH / 2);
+        ctx.textAlign = "left";
+        ctx.textBaseline = "alphabetic";
+    });
+}
+
+function renderFaceAttributes(faceIndex) {
+    const face = currentResult.faces[faceIndex];
+    attributesGrid.innerHTML = "";
+
     const sorted = Object.entries(face.attributes).sort((a, b) => b[1] - a[1]);
 
     for (const [name, score] of sorted) {
@@ -239,13 +336,22 @@ function hideError() {
 
 function clearAll() {
     currentFile = null;
+    currentResult = null;
+    activeFaceIndex = 0;
     previewImage.src = "";
     previewSection.style.display = "none";
     uploadSection.style.display = "";
     resultsContent.style.display = "none";
     resultsPlaceholder.style.display = "";
+    faceTabs.innerHTML = "";
     hideError();
 }
+
+window.addEventListener("resize", () => {
+    if (currentResult && resultsContent.style.display !== "none") {
+        drawBoundingBoxes();
+    }
+});
 
 /* --- Boot --- */
 init();

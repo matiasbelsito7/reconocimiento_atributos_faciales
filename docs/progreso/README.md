@@ -26,6 +26,7 @@ Cada archivo documenta:
 | Fase 10: Model Registry | `fase-10-model-registry.md` | Completada |
 | Fase 11: Retraining | `fase-11-retraining.md` | Completada |
 | Fase 12-14: API + Frontend + Docker | `fase-12-14-api-frontend-docker.md` | Completada |
+| T-13.8: Multi-face UI | `t-13.8-multi-face-ui.md` | Completada |
 | T-14.6: CD del modelo champion | `fase-14-cd.md` | Completada |
 
 ---

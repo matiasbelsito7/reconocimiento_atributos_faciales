@@ -462,6 +462,12 @@ Cada tarea referencia la sección de especificación que la respalda. Las decisi
 - **Estado**: completada
 - **Descripción**: Crear `frontend/Dockerfile` basado en `nginx:alpine` para servir el frontend estático.
 
+### T-13.8: Visualización multi-face en frontend
+- **Especificación**: specs §4.1 (Detección de rostros: manejar múltiples rostros), specs §9.3-9.4 (Salida y formato de predicciones con bbox por cada rostro)
+- **Prioridad**: alta
+- **Estado**: completada
+- **Descripción**: Mostrar predicciones de **todas** las caras detectadas en la imagen, no solo la primera. Agregar pestañas ("Cara 1", "Cara 2", ...) que permiten alternar entre las predicciones de cada rostro. Dibujar bounding boxes numerados sobre la imagen de resultados usando un `<canvas>` superpuesto. Seleccionar la cara más grande por defecto. Actualizar HTML (`<canvas>`, `<div id="face-tabs">`), CSS (estilos de tabs y canvas overlay) y JS (`drawBoundingBoxes`, `renderFaceTabs`, `renderFaceAttributes`, `findLargestFaceIndex`, redibujo en resize). `FaceProcessingPipeline.use_largest_face_only` se mantiene en `True` por decisión del usuario.
+
 ---
 
 ## Fase 14: Docker
@@ -530,7 +536,7 @@ Cada tarea referencia la sección de especificación que la respalda. Las decisi
 | Arquitectura del modelo | Fase 4 | Completada (ResNet) |
 | Función de pérdida | Fase 4 | Completada (BCE Loss) |
 | Métricas de evaluación | Fase 6 | Pendiente |
-| Interfaz de aplicación | Fase 12 | En progreso (FastAPI + Frontend) |
+| Interfaz de aplicación | Fase 12 | Completada (FastAPI + Frontend multi-face) |
 | Estrategia de monitoreo | Fase 9 | Pendiente |
 | Implementación de Model Registry | Fase 10 | Pendiente |
 | Frecuencia de reentrenamiento | Fase 11 | Pendiente |
