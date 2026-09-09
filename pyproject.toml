@@ -110,11 +110,9 @@ module = [
     "numpy.*",
     "torch.*",
     "torchvision.*",
-    "mtcnn.*",
     "sklearn.*",
     "pandas.*",
     "mlflow.*",
-    "dvc.*",
 ]
 ignore_missing_imports = true
 

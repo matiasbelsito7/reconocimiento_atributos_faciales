@@ -31,7 +31,7 @@ class FaceNormalizer:
         """
         resized = face.resize(self.config.target_size, Image.Resampling.LANCZOS)
 
-        arr = np.array(resized, dtype=np.float32)
+        arr: np.ndarray = np.array(resized, dtype=np.float32)
 
         if self.config.normalize_pixels:
             arr = arr / 255.0
@@ -47,8 +47,9 @@ class FaceNormalizer:
         Returns:
             Array numpy con lote de rostros normalizados.
         """
-        normalized = [self.normalize(face) for face in faces]
-        return np.stack(normalized)
+        normalized: list[np.ndarray] = [self.normalize(face) for face in faces]
+        result: np.ndarray = np.stack(normalized)
+        return result
 
     def get_output_shape(self) -> tuple[int, int, int]:
         """Obtener forma de salida esperada."""

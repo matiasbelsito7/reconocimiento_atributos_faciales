@@ -152,7 +152,7 @@ class AcceptanceCriteria:
         Returns:
             Diccionario con comparación detallada.
         """
-        comparison = {}
+        comparison: dict[str, object] = {}
 
         for metric_name in self.required_metrics:
             new_value = getattr(new_metrics, metric_name, 0)

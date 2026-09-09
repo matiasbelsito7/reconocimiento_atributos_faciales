@@ -126,7 +126,7 @@ class ConfigLoader:
             Diccionario con la configuración.
         """
         with open(path) as f:
-            return yaml.safe_load(f)
+            return dict(yaml.safe_load(f))
 
     def _load_pipeline_config(self, path: Path) -> PipelineConfig:
         """Cargar configuración del pipeline.

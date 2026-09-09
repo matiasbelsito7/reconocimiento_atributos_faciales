@@ -79,7 +79,7 @@ class ModelRegistry:
 
     def _save_registry(self) -> None:
         """Guardar registro en disco."""
-        data = {"models": {}, "versions": {}}
+        data: dict[str, dict[str, object]] = {"models": {}, "versions": {}}
 
         for model_id, model in self._models.items():
             model_dict = asdict(model)
@@ -91,7 +91,7 @@ class ModelRegistry:
             for v in versions:
                 v_dict = asdict(v)
                 v_dict["state"] = v.state.value
-                data["versions"][model_id].append(v_dict)
+                data["versions"][model_id].append(v_dict)  # type: ignore[attr-defined]
 
         with open(self._metadata_file, "w") as f:
             json.dump(data, f, indent=2)
@@ -409,7 +409,7 @@ class ModelRegistry:
         Returns:
             Diccionario con resumen del registro.
         """
-        state_counts = {}
+        state_counts: dict[str, int] = {}
         for model in self._models.values():
             state = model.state.value
             state_counts[state] = state_counts.get(state, 0) + 1

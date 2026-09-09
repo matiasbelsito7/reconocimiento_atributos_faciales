@@ -51,7 +51,7 @@ class FaceDetector:
         self._model_dir = Path(self.config.model_dir)
         self._net = self._load_model()
 
-    def _load_model(self) -> cv2.dnn_Net | None:
+    def _load_model(self) -> cv2.dnn.Net | None:
         """Cargar modelo de detección."""
         proto_path = self._model_dir / "deploy.prototxt"
         weights_path = self._model_dir / "res10_300x300_ssd_iter_140000.caffemodel"
@@ -101,6 +101,7 @@ class FaceDetector:
             (104.0, 177.0, 123.0),
         )
 
+        assert self._net is not None
         self._net.setInput(blob)
         detections = self._net.forward()
 

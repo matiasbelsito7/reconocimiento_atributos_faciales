@@ -92,7 +92,7 @@ class PredictionLogger:
 
         line = json.dumps(asdict(record)) + "\n"
 
-        with open(self._current_file, "a") as f:
+        with open(self._current_file, "a") as f:  # type: ignore[arg-type]
             f.write(line)
 
         self._current_size += len(line.encode("utf-8"))

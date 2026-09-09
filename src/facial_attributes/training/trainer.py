@@ -199,6 +199,7 @@ class Trainer:
         predictions = torch.cat(all_predictions)
         targets = torch.cat(all_targets)
 
+        assert self._metrics_calculator is not None
         metrics = self._metrics_calculator.calculate(predictions, targets)
 
         return {
@@ -232,7 +233,7 @@ class Trainer:
 
         mlflow.set_experiment(experiment_name)
 
-        history = {
+        history: dict[str, list[float]] = {
             "train_loss": [],
             "val_loss": [],
             "val_accuracy": [],

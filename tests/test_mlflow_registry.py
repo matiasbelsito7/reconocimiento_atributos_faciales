@@ -1,5 +1,6 @@
 """Tests para la integración de MLflow con Model Registry."""
 
+from collections.abc import Generator
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -13,7 +14,7 @@ from facial_attributes.model_registry.schemas import (
 
 
 @pytest.fixture
-def mock_mlflow():
+def mock_mlflow() -> Generator[MagicMock, None, None]:
     """Mock de MLflow para tests."""
     with patch("facial_attributes.model_registry.mlflow_registry.mlflow") as mock:
         mock.set_tracking_uri = MagicMock()
@@ -66,14 +67,14 @@ def sample_dataset() -> DatasetInfo:
 class TestMLflowRegistry:
     """Tests para MLflowRegistry."""
 
-    def test_initialization(self, mock_mlflow) -> None:
+    def test_initialization(self, mock_mlflow: MagicMock) -> None:
         """Test de inicialización del registry MLflow."""
         registry = MLflowRegistry(experiment_name="test_experiment")
 
         assert registry.experiment_name == "test_experiment"
         mock_mlflow.set_experiment.assert_called_once_with("test_experiment")
 
-    def test_initialization_with_tracking_uri(self, mock_mlflow) -> None:
+    def test_initialization_with_tracking_uri(self, mock_mlflow: MagicMock) -> None:
         """Test de inicialización con tracking URI."""
         MLflowRegistry(
             experiment_name="test_experiment",
@@ -84,10 +85,10 @@ class TestMLflowRegistry:
 
     def test_log_training_run(
         self,
-        mock_mlflow,
-        sample_metrics,
-        sample_config,
-        sample_dataset,
+        mock_mlflow: MagicMock,
+        sample_metrics: ModelMetrics,
+        sample_config: ModelConfig,
+        sample_dataset: DatasetInfo,
     ) -> None:
         """Test de logging de entrenamiento."""
         mock_run = MagicMock()
@@ -110,8 +111,8 @@ class TestMLflowRegistry:
 
     def test_log_training_run_with_model(
         self,
-        mock_mlflow,
-        sample_metrics,
+        mock_mlflow: MagicMock,
+        sample_metrics: ModelMetrics,
     ) -> None:
         """Test de logging con modelo PyTorch."""
         mock_model = MagicMock()
@@ -135,8 +136,8 @@ class TestMLflowRegistry:
 
     def test_log_training_run_with_tags(
         self,
-        mock_mlflow,
-        sample_metrics,
+        mock_mlflow: MagicMock,
+        sample_metrics: ModelMetrics,
     ) -> None:
         """Test de logging con tags."""
         mock_run = MagicMock()
@@ -158,8 +159,8 @@ class TestMLflowRegistry:
 
     def test_log_training_run_logs_metrics(
         self,
-        mock_mlflow,
-        sample_metrics,
+        mock_mlflow: MagicMock,
+        sample_metrics: ModelMetrics,
     ) -> None:
         """Test de que se loguean todas las métricas."""
         mock_run = MagicMock()
@@ -185,9 +186,9 @@ class TestMLflowRegistry:
 
     def test_log_training_run_logs_config(
         self,
-        mock_mlflow,
-        sample_metrics,
-        sample_config,
+        mock_mlflow: MagicMock,
+        sample_metrics: ModelMetrics,
+        sample_config: ModelConfig,
     ) -> None:
         """Test de que se loguea la configuración."""
         mock_run = MagicMock()
@@ -212,9 +213,9 @@ class TestMLflowRegistry:
 
     def test_log_training_run_logs_dataset(
         self,
-        mock_mlflow,
-        sample_metrics,
-        sample_dataset,
+        mock_mlflow: MagicMock,
+        sample_metrics: ModelMetrics,
+        sample_dataset: DatasetInfo,
     ) -> None:
         """Test de que se loguea la información del dataset."""
         mock_run = MagicMock()
@@ -236,7 +237,7 @@ class TestMLflowRegistry:
         mock_mlflow.log_param.assert_any_call("dataset_version", "1.0")
         mock_mlflow.log_param.assert_any_call("num_samples", 202599)
 
-    def test_get_run(self, mock_mlflow) -> None:
+    def test_get_run(self, mock_mlflow: MagicMock) -> None:
         """Test de obtención de run."""
         mock_run = MagicMock()
         mock_mlflow.get_run.return_value = mock_run
@@ -247,7 +248,7 @@ class TestMLflowRegistry:
         assert run == mock_run
         mock_mlflow.get_run.assert_called_once_with("test_run_id")
 
-    def test_get_run_not_found(self, mock_mlflow) -> None:
+    def test_get_run_not_found(self, mock_mlflow: MagicMock) -> None:
         """Test de obtención de run no encontrado."""
         mock_mlflow.get_run.side_effect = Exception("Run not found")
 
@@ -256,7 +257,7 @@ class TestMLflowRegistry:
 
         assert run is None
 
-    def test_get_model_versions(self, mock_mlflow) -> None:
+    def test_get_model_versions(self, mock_mlflow: MagicMock) -> None:
         """Test de obtención de versiones de modelo."""
         mock_client = MagicMock()
         mock_version = MagicMock()
@@ -274,7 +275,7 @@ class TestMLflowRegistry:
         assert versions[0]["version"] == "1"
         assert versions[0]["status"] == "READY"
 
-    def test_transition_model_version(self, mock_mlflow) -> None:
+    def test_transition_model_version(self, mock_mlflow: MagicMock) -> None:
         """Test de transición de versión de modelo."""
         mock_client = MagicMock()
         mock_mlflow.MlflowClient.return_value = mock_client
@@ -293,7 +294,7 @@ class TestMLflowRegistry:
             stage="Production",
         )
 
-    def test_transition_model_version_error(self, mock_mlflow) -> None:
+    def test_transition_model_version_error(self, mock_mlflow: MagicMock) -> None:
         """Test de transición con error."""
         mock_client = MagicMock()
         mock_client.transition_model_version_stage.side_effect = Exception("Error")
@@ -308,7 +309,7 @@ class TestMLflowRegistry:
 
         assert result is False
 
-    def test_delete_model_version(self, mock_mlflow) -> None:
+    def test_delete_model_version(self, mock_mlflow: MagicMock) -> None:
         """Test de eliminación de versión de modelo."""
         mock_client = MagicMock()
         mock_mlflow.MlflowClient.return_value = mock_client
@@ -322,7 +323,7 @@ class TestMLflowRegistry:
             version="1",
         )
 
-    def test_delete_model_version_error(self, mock_mlflow) -> None:
+    def test_delete_model_version_error(self, mock_mlflow: MagicMock) -> None:
         """Test de eliminación con error."""
         mock_client = MagicMock()
         mock_client.delete_model_version.side_effect = Exception("Error")
@@ -333,7 +334,7 @@ class TestMLflowRegistry:
 
         assert result is False
 
-    def test_search_runs(self, mock_mlflow) -> None:
+    def test_search_runs(self, mock_mlflow: MagicMock) -> None:
         """Test de búsqueda de runs."""
         import pandas as pd
 
@@ -356,7 +357,7 @@ class TestMLflowRegistry:
         assert len(runs) == 2
         assert runs[0]["run_id"] == "run_1"
 
-    def test_get_experiment_summary(self, mock_mlflow) -> None:
+    def test_get_experiment_summary(self, mock_mlflow: MagicMock) -> None:
         """Test de obtención de resumen del experimento."""
         import pandas as pd
 
@@ -375,7 +376,7 @@ class TestMLflowRegistry:
         assert summary["successful_runs"] == 2
         assert summary["failed_runs"] == 1
 
-    def test_get_experiment_summary_error(self, mock_mlflow) -> None:
+    def test_get_experiment_summary_error(self, mock_mlflow: MagicMock) -> None:
         """Test de obtención de resumen con error."""
         mock_mlflow.search_runs.side_effect = Exception("Error")
 

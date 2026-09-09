@@ -40,7 +40,7 @@ class MLflowRegistry:
         metrics: ModelMetrics,
         config: ModelConfig | None = None,
         dataset: DatasetInfo | None = None,
-        model=None,
+        model: object = None,
         tags: dict[str, str] | None = None,
     ) -> str:
         """Registrar un entrenamiento como run de MLflow.
@@ -101,7 +101,7 @@ class MLflowRegistry:
                     registered_model_name=model_name,
                 )
 
-            return run.info.run_id
+            return str(run.info.run_id)
 
     def get_run(self, run_id: str) -> Run | None:
         """Obtener un run de MLflow.
@@ -168,7 +168,7 @@ class MLflowRegistry:
         except Exception:
             return False
 
-    def load_model(self, model_name: str, version: str | None = None):
+    def load_model(self, model_name: str, version: str | None = None) -> object:
         """Cargar modelo desde MLflow.
 
         Args:

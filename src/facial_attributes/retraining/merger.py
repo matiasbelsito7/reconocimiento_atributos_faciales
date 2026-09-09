@@ -152,8 +152,8 @@ class DatasetMerger:
         Returns:
             Diccionario con resultado de validación.
         """
-        issues = []
-        warnings = []
+        issues: list[str] = []
+        warnings: list[str] = []
 
         annotations_path = Path(annotations_path)
         images_dir = Path(images_dir)

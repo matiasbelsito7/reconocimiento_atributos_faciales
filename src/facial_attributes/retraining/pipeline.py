@@ -120,10 +120,13 @@ class RetrainingPipeline:
         )
         steps.append(step_register)
 
+        model_id: str | None = (
+            step_register.result if isinstance(step_register.result, str) else None
+        )
         return RetrainingResult(
             success=step_register.status == "completed",
             steps=steps,
-            model_id=step_register.result,
+            model_id=model_id,
             criteria_result=step_evaluate.result,
             total_duration_seconds=time.time() - start_time,
         )

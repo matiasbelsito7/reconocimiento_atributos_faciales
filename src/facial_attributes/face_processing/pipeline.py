@@ -159,4 +159,5 @@ class FaceProcessingPipeline:
 
     def get_output_shape(self) -> tuple[int, int, int]:
         """Obtener forma de salida esperada."""
-        return self._normalizer.get_output_shape()
+        result: tuple[int, int, int] = self._normalizer.get_output_shape()
+        return result

@@ -44,7 +44,7 @@ class ImageTransformer:
 
     def to_numpy(self, image: Image.Image) -> np.ndarray:
         """Convertir imagen a array numpy float32 normalizado."""
-        arr = np.array(image, dtype=np.float32) / 255.0
+        arr: np.ndarray = np.array(image, dtype=np.float32) / 255.0
         self.records.append(TransformRecord("to_numpy", {"normalized": True}))
         return arr
 

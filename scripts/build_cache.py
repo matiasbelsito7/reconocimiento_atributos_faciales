@@ -93,11 +93,13 @@ def build_cache(
 if __name__ == "__main__":
     import os
 
-    annotations = Path("data/processed/celeba_subset_40000.csv")
-    images = Path("data/raw/images")
-    default_out = Path(os.environ.get("CELEBA_CACHE_DIR", "data/processed/cache_40000"))
+    annotations_path: Path = Path("data/processed/celeba_subset_40000.csv")
+    images: Path = Path("data/raw/images")
+    default_out: Path = Path(
+        os.environ.get("CELEBA_CACHE_DIR", "data/processed/cache_40000")
+    )
     build_cache(
-        annotations_file=annotations,
+        annotations_file=annotations_path,
         images_dir=images,
         output_dir=default_out,
     )

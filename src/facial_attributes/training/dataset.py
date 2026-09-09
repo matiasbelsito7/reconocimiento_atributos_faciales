@@ -1,5 +1,6 @@
 """Dataset para entrenamiento de atributos faciales."""
 
+from collections.abc import Callable
 from pathlib import Path
 
 import numpy as np
@@ -17,7 +18,7 @@ class FacialAttributeDataset(Dataset):
         annotations_file: Path,
         images_dir: Path,
         attribute_columns: list[str] | None = None,
-        transform=None,
+        transform: Callable[[object], object] | None = None,
     ) -> None:
         """Inicializar dataset.
 

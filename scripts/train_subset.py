@@ -111,7 +111,11 @@ class SubsetTrainer:
 
         cm = CheckpointManager(checkpoint_dir)
         best_val_loss = float("inf")
-        history = {"train_loss": [], "val_loss": [], "val_f1": []}
+        history: dict[str, list[float]] = {
+            "train_loss": [],
+            "val_loss": [],
+            "val_f1": [],
+        }
         start_epoch = 0
 
         if resume:
@@ -190,7 +194,7 @@ class SubsetTrainer:
         )
         return history
 
-    def _build_transform(self):
+    def _build_transform(self) -> object:
         """Construir transformación coherente con la inferencia."""
         from torchvision import transforms
 
@@ -205,17 +209,17 @@ class SubsetTrainer:
         self, preds: list[torch.Tensor], targets: list[torch.Tensor]
     ) -> dict[str, float]:
         """Calcular métricas en validación."""
-        preds = torch.cat(preds)
-        targets = torch.cat(targets)
-        binary = (preds > 0.5).float()
+        preds_tensor = torch.cat(preds)
+        targets_tensor = torch.cat(targets)
+        binary = (preds_tensor > 0.5).float()
 
-        correct = (binary == targets).sum().item()
-        total = targets.numel()
+        correct = (binary == targets_tensor).sum().item()
+        total = targets_tensor.numel()
         accuracy = correct / max(total, 1)
 
-        tp = ((binary == 1) & (targets == 1)).sum().item()
-        fp = ((binary == 1) & (targets == 0)).sum().item()
-        fn = ((binary == 0) & (targets == 1)).sum().item()
+        tp = ((binary == 1) & (targets_tensor == 1)).sum().item()
+        fp = ((binary == 1) & (targets_tensor == 0)).sum().item()
+        fn = ((binary == 0) & (targets_tensor == 1)).sum().item()
 
         precision = tp / max(tp + fp, 1)
         recall = tp / max(tp + fn, 1)
