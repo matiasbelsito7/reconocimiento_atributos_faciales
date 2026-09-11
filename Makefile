@@ -1,4 +1,4 @@
-.PHONY: help install sync test lint format typecheck pre-commit clean
+.PHONY: help install sync test lint format typecheck pre-commit clean docker-test
 
 help: ## Mostrar esta ayuda
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -52,6 +52,9 @@ docker-stop: ## Detener servicios Docker
 
 docker-logs: ## Ver logs de Docker
 	docker compose logs -f
+
+docker-test: ## Ejecutar smoke test de integración Docker
+	uv run python scripts/docker_smoke.py
 
 run-api: ## Ejecutar API en desarrollo (uvicorn --reload)
 	uv run uvicorn facial_attributes.api.main:app --reload --port 8000

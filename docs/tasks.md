@@ -499,8 +499,8 @@ Cada tarea referencia la sección de especificación que la respalda. Las decisi
 ### T-14.5: Tests de integración Docker
 - **Especificación**: constitution §3 (Calidad de software)
 - **Prioridad**: media
-- **Estado**: pendiente
-- **Descripción**: Verificar que `docker compose build && docker compose up` levanta ambos servicios correctamente y que el health check responde.
+- **Estado**: completada
+- **Descripción**: Verificar que `docker compose build && docker compose up` levanta ambos servicios correctamente y que el health check responde. Implementado como `scripts/docker_smoke.py` (target `make docker-test`) y job `docker-smoke` en CI. Requirió corregir el `Dockerfile` (el runtime no copiaba `pyproject.toml`/`README.md`, rompiendo el build; se empaqueta la app como wheel en el builder).
 
 ### T-14.6: Workflow de CD para despliegue del modelo champion
 - **Especificación**: specs §13.3 (Estados del modelo), specs §13.4 (Operaciones), specs §16 (Constraints)

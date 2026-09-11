@@ -1,7 +1,7 @@
 # Fase 12-14: API, Frontend y Docker
 
 **Fecha**: 2026-09-03
-**Estado**: Completada (excepto T-14.5: test de integración Docker)
+**Estado**: Completada
 
 ---
 
@@ -87,8 +87,23 @@ docker compose up -d
 
 ---
 
+## Test de integración Docker (T-14.5)
+
+Se agregó `scripts/docker_smoke.py`, un smoke test ejecutable y repetible que:
+
+1. Verifica que `docker compose build` construye ambas imágenes.
+2. Levanta backend y frontend con `docker compose up -d` (proyecto aislado `facial-attributes-smoke`).
+3. Espera que `GET /api/health` responda `status=ok` (funciona sin pesos del modelo).
+4. Verifica que el frontend responde HTTP 200.
+5. Detiene los servicios al finalizar (siempre, incluso en fallo).
+
+Accesible vía `make docker-test` y como job `docker-smoke` en `.github/workflows/ci.yml`.
+
+**Corrección al `Dockerfile`**: el runtime no copiaba `pyproject.toml`/`README.md`, por lo que el `pip install -e .` fallaba cualquier build. Ahora la aplicación se empaqueta como wheel en el builder (`pip wheel --no-deps .`) y se instala desde `/wheels` junto al resto de dependencias; se eliminó el `COPY src/` redundante y el `pip install -e .` del runtime.
+
+---
+
 ## Pendiente
 
-- **T-14.5**: Test de integración Docker (requiere Docker daemon corriendo)
 - **Modelo entrenado**: La API funciona pero sin modelo entrenado, `/predict` devuelve error "Modelo no cargado"
 - **Pesos face detector**: `res10_300x300_ssd_iter_140000.caffemodel` debe descargarse manualmente

@@ -22,6 +22,11 @@ RUN pip wheel --no-cache-dir --wheel-dir /wheels \
     pillow opencv-python-headless numpy scikit-learn \
     pyyaml
 
+# Empaquetar la aplicación a un wheel instalable con las dependencias
+COPY pyproject.toml README.md ./
+COPY src/ ./src/
+RUN pip wheel --no-cache-dir --no-deps --wheel-dir /wheels .
+
 # ══════════════════════════════════════════════════════════════
 # Stage 2: RUNTIME - imagen ligera sin compiladores
 # ══════════════════════════════════════════════════════════════
@@ -44,9 +49,7 @@ RUN pip install --upgrade pip && \
     pip install --no-cache-dir --no-index --find-links=/wheels /wheels/*.whl && \
     rm -rf /wheels
 
-COPY src/ ./src/
 COPY config/ ./config/
-RUN pip install --no-cache-dir --no-deps -e . || pip install --no-cache-dir --no-deps .
 
 RUN mkdir -p checkpoints models logs && \
     chown -R appuser:appgroup /app
