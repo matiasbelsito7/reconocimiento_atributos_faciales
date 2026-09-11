@@ -5,7 +5,10 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from facial_attributes.data.dataset import DatasetManager
+from facial_attributes.data.dataset import (
+    OBSERVABLE_ATTRIBUTE_NAMES,
+    DatasetManager,
+)
 
 
 @pytest.fixture
@@ -25,7 +28,7 @@ def sample_data_dir(tmp_path: Path) -> Path:
             "image_id": [f"img_{i:04d}" for i in range(10)],
             "Atr_smiling": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
             "Atr_eyeglasses": [0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-            "Atr_hat": [0, 0, 1, 1, 0, 0, 1, 1, 0, 0],
+            "Atr_wearing_hat": [0, 0, 1, 1, 0, 0, 1, 1, 0, 0],
         }
     )
     df.to_csv(annotations_dir / "celeba_attributes.csv", index=False)
@@ -61,7 +64,38 @@ def test_filter_observable_attributes(sample_data_dir: Path) -> None:
 
     assert "image_id" in filtered.columns
     assert "Atr_smiling" in filtered.columns
-    assert "Atr_hat" in filtered.columns
+    assert "Atr_wearing_hat" in filtered.columns
+
+
+def test_observable_attributes_pascal_case(tmp_path: Path) -> None:
+    """Test del filtrado con nombres reales de CelebA (PascalCase)."""
+    df = pd.DataFrame(
+        {
+            "image_id": [str(i) for i in range(5)],
+            "Atr_Smiling": [1] * 5,
+            "Atr_Eyeglasses": [0] * 5,
+            "Atr_Wearing_Necklace": [1] * 5,
+            "Atr_Attractive": [1] * 5,
+            "Atr_Oval_Face": [0] * 5,
+            "Atr_Big_Lips": [1] * 5,
+        }
+    )
+    manager = DatasetManager(tmp_path)
+    filtered = manager.filter_observable_attributes(df)
+
+    assert "Atr_Smiling" in filtered.columns
+    assert "Atr_Eyeglasses" in filtered.columns
+    assert "Atr_Wearing_Necklace" in filtered.columns
+    # Atributos subjetivos/no observables quedan excluidos
+    assert "Atr_Attractive" not in filtered.columns
+    assert "Atr_Oval_Face" not in filtered.columns
+    assert "Atr_Big_Lips" not in filtered.columns
+
+
+def test_observable_names_are_24() -> None:
+    """La lista de atributos observables debe tener exactamente 24."""
+    assert len(OBSERVABLE_ATTRIBUTE_NAMES) == 24
+    assert len(set(OBSERVABLE_ATTRIBUTE_NAMES)) == 24
 
 
 def test_split_dataset(sample_data_dir: Path) -> None:

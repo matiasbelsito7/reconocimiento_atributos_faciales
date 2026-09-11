@@ -1,6 +1,9 @@
 """Tests para el módulo de entrenamiento."""
 
+import importlib.util
+import sys
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -8,6 +11,7 @@ import pytest
 import torch
 from torch.utils.data import DataLoader, TensorDataset
 
+from facial_attributes.config.schemas import AugmentationConfig
 from facial_attributes.model.classifier import FacialAttributeClassifier, ModelConfig
 from facial_attributes.training.checkpoint import CheckpointManager
 from facial_attributes.training.config import TrainingConfig, set_seed
@@ -349,3 +353,67 @@ class TestTrainer:
 
         assert predictions.shape[0] > 0
         assert targets.shape[0] > 0
+
+
+def _load_train_subset_module() -> Any:
+    """Cargar scripts/train_subset.py sin ejecutar su __main__."""
+    module_path = Path(__file__).parents[1] / "scripts" / "train_subset.py"
+    spec = importlib.util.spec_from_file_location("train_subset_mod", module_path)
+    assert spec is not None
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+class TestTrainSubsetAugmentation:
+    """Tests de las transformaciones con augmentation de train_subset."""
+
+    def _transform_names(self, transform: Any) -> list[str]:
+        return [type(t).__name__ for t in transform.transforms]
+
+    def test_eval_transform_sin_augmentation(self) -> None:
+        """El transform de evaluación solo tiene Resize/ToTensor/Normalize."""
+        module = _load_train_subset_module()
+        transform = module.SubsetTrainer()._build_eval_transform()
+
+        assert self._transform_names(transform) == [
+            "Resize",
+            "ToTensor",
+            "Normalize",
+        ]
+
+    def test_train_transform_incluye_augmentation(self) -> None:
+        """Con augmentation habilitada, se añaden operaciones estocásticas."""
+        module = _load_train_subset_module()
+        aug = AugmentationConfig(
+            enabled=True,
+            horizontal_flip=True,
+            vertical_flip=False,
+            rotation_range=15,
+            brightness_range=[0.8, 1.2],
+            contrast_range=[0.8, 1.2],
+        )
+        transform = module.SubsetTrainer()._build_train_transform(aug)
+        names = self._transform_names(transform)
+
+        assert "RandomHorizontalFlip" in names
+        assert "RandomRotation" in names
+        assert "ColorJitter" in names
+        assert "RandomVerticalFlip" not in names
+        assert names[0] == "Resize"
+        assert names[-2:] == ["ToTensor", "Normalize"]
+
+    def test_train_transform_deshabilitada(self) -> None:
+        """Con augmentation deshabilitada, es idéntico al de evaluación."""
+        module = _load_train_subset_module()
+        transform = module.SubsetTrainer()._build_train_transform(
+            AugmentationConfig(enabled=False)
+        )
+
+        assert self._transform_names(transform) == [
+            "Resize",
+            "ToTensor",
+            "Normalize",
+        ]

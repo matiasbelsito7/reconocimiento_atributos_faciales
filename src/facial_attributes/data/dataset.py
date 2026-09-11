@@ -5,6 +5,33 @@ from typing import Any
 
 import pandas as pd
 
+OBSERVABLE_ATTRIBUTE_NAMES: list[str] = [
+    "5_o_Clock_Shadow",
+    "Bald",
+    "Bangs",
+    "Black_Hair",
+    "Blond_Hair",
+    "Blurry",
+    "Brown_Hair",
+    "Eyeglasses",
+    "Goatee",
+    "Gray_Hair",
+    "Heavy_Makeup",
+    "Mouth_Slightly_Open",
+    "Mustache",
+    "No_Beard",
+    "Receding_Hairline",
+    "Sideburns",
+    "Smiling",
+    "Straight_Hair",
+    "Wavy_Hair",
+    "Wearing_Earrings",
+    "Wearing_Hat",
+    "Wearing_Lipstick",
+    "Wearing_Necklace",
+    "Wearing_Necktie",
+]
+
 
 class DatasetManager:
     """Gestor de datasets con soporte para múltiples fuentes."""
@@ -29,36 +56,35 @@ class DatasetManager:
         """Obtener columnas de atributos del DataFrame."""
         return [col for col in df.columns if col.startswith("Atr_")]
 
-    def filter_observable_attributes(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Filtrar solo atributos visualmente observables."""
-        observable_attrs = [
-            "Atr_eyeglasses",
-            "Atr_hat",
-            "Atr_earrings",
-            "Atr_necklace",
-            "Atr_necktie",
-            "Atr_lipstick",
-            "Atr_smiling",
-            "Atr_mouth_slightly_open",
-            "Atr_goatee",
-            "Atr_mustache",
-            "Atr_no_beard",
-            "Atr_sideburns",
-            "Atr_bangs",
-            "Atr_receding_hairline",
-            "Atr_straight_hair",
-            "Atr_wavy_hair",
-            "Atr_bald",
-            "Atr_black_hair",
-            "Atr_blond_hair",
-            "Atr_brown_hair",
-            "Atr_gray_hair",
-            "Atr_5_o_clock_shadow",
-            "Atr_blurry",
-            "Atr_heavy_makeup",
+    @staticmethod
+    def _normalize_attribute_name(name: str) -> str:
+        """Normalizar nombre de atributo para comparación case-insensitive."""
+        return name.removeprefix("Atr_").casefold()
+
+    def get_observable_attribute_columns(self, df: pd.DataFrame) -> list[str]:
+        """Obtener columnas de atributos visualmente observables (24).
+
+        Compara case-insensitive para soportar tanto nombres canónicos de
+        CelebA (`Atr_Smiling`) como variantes lowercase (`Atr_smiling`).
+
+        Args:
+            df: DataFrame con columnas de atributos.
+
+        Returns:
+            Lista de columnas (`Atr_*`) observables presentes en el DataFrame.
+        """
+        observable = {
+            self._normalize_attribute_name(name) for name in OBSERVABLE_ATTRIBUTE_NAMES
+        }
+        return [
+            col
+            for col in self.get_attribute_columns(df)
+            if self._normalize_attribute_name(col) in observable
         ]
 
-        available_attrs = [attr for attr in observable_attrs if attr in df.columns]
+    def filter_observable_attributes(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Filtrar solo atributos visualmente observables."""
+        available_attrs = self.get_observable_attribute_columns(df)
         return df[["image_id"] + available_attrs]
 
     def split_dataset(

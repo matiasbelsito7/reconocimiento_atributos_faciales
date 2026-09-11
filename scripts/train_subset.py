@@ -6,11 +6,13 @@ import os
 import time
 from dataclasses import asdict
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import torch
 from torch.utils.data import DataLoader, random_split
 
+from facial_attributes.config.schemas import AugmentationConfig
 from facial_attributes.model.classifier import FacialAttributeClassifier, ModelConfig
 from facial_attributes.model.losses import LossConfig, MultilabelLoss
 from facial_attributes.training.checkpoint import CheckpointManager
@@ -40,6 +42,8 @@ class SubsetTrainer:
         checkpoint_dir: str = "checkpoints",
         resume: bool = False,
         cache_dir: Path | None = None,
+        attribute_subset: list[str] | None = None,
+        use_augmentation: bool = True,
     ) -> dict[str, list[float]]:
         """Ejecutar entrenamiento.
 
@@ -53,6 +57,9 @@ class SubsetTrainer:
             checkpoint_dir: Directorio de checkpoints.
             resume: Continuar desde el último checkpoint si existe.
             cache_dir: Directorio de cache de .npy (acelera entrenamiento).
+            attribute_subset: Columnas de atributos a usar (todas si None).
+            use_augmentation: Aplicar augmentation definida en training.yaml
+                (solo al split de entrenamiento). No aplica en cache de .npy.
 
         Returns:
             Historial de entrenamiento.
@@ -67,13 +74,32 @@ class SubsetTrainer:
             print(
                 f"Usando cache con {len(ds)} instancias desde {cache_dir}", flush=True
             )
+            ds_train: CachedAttributeDataset | FacialAttributeDataset | None = None
         else:
             ds = FacialAttributeDataset(
                 annotations_file=annotations_file,
                 images_dir=images_dir,
-                transform=self._build_transform(),
+                transform=self._build_eval_transform(),
+                attribute_columns=attribute_subset,
             )
             print(f"Imágenes cargadas desde {images_dir}", flush=True)
+            ds_train = None
+            if use_augmentation:
+                aug_config = self._load_augmentation_config()
+                if aug_config.enabled:
+                    ds_train = FacialAttributeDataset(
+                        annotations_file=annotations_file,
+                        images_dir=images_dir,
+                        transform=self._build_train_transform(aug_config),
+                        attribute_columns=attribute_subset,
+                    )
+                    print(
+                        "Augmentation activada para el split de entrenamiento "
+                        f"(flip_h={aug_config.horizontal_flip}, "
+                        f"rot={aug_config.rotation_range}°, "
+                        f"contraste={aug_config.contrast_range[:2]})",
+                        flush=True,
+                    )
 
         n = len(ds)
         val_size = int(0.15 * n)
@@ -85,6 +111,9 @@ class SubsetTrainer:
             [train_size, val_size, test_size],
             generator=torch.Generator().manual_seed(42),
         )
+
+        if ds_train is not None:
+            train_ds = torch.utils.data.Subset(ds_train, train_ds.indices)
 
         train_loader = DataLoader(
             train_ds, batch_size=batch_size, shuffle=True, num_workers=num_workers
@@ -220,8 +249,8 @@ class SubsetTrainer:
             np.clip(weights.values, a_min=1.0, a_max=50.0), dtype=torch.float32
         )
 
-    def _build_transform(self) -> object:
-        """Construir transformación coherente con la inferencia."""
+    def _build_eval_transform(self) -> object:
+        """Transform sin augmentation, coherente con evaluación/inferencia."""
         from torchvision import transforms
 
         return transforms.Compose(
@@ -233,6 +262,57 @@ class SubsetTrainer:
                 ),
             ]
         )
+
+    def _build_train_transform(self, aug_config: AugmentationConfig) -> object:
+        """Construir transform de entrenamiento con augmentation configurable.
+
+        Genérico sobre las operaciones de `training.yaml`: flips, rotación y
+        cambios de brillo/contraste, aplicados antes de ToTensor/Normalize.
+        """
+        from torchvision import transforms
+
+        ops: list[Any] = [transforms.Resize((224, 224))]
+        if aug_config.enabled:
+            if aug_config.horizontal_flip:
+                ops.append(transforms.RandomHorizontalFlip(p=0.5))
+            if aug_config.vertical_flip:
+                ops.append(transforms.RandomVerticalFlip(p=0.5))
+            if aug_config.rotation_range > 0:
+                ops.append(transforms.RandomRotation(degrees=aug_config.rotation_range))
+            jitter_kwargs: dict[str, tuple[float, float]] = {}
+            if list(aug_config.brightness_range) != [1.0, 1.0]:
+                jitter_kwargs["brightness"] = tuple(aug_config.brightness_range)
+            if list(aug_config.contrast_range) != [1.0, 1.0]:
+                jitter_kwargs["contrast"] = tuple(aug_config.contrast_range)
+            if jitter_kwargs:
+                ops.append(transforms.ColorJitter(**jitter_kwargs))
+        ops.extend(
+            [
+                transforms.ToTensor(),
+                transforms.Normalize(
+                    mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+                ),
+            ]
+        )
+        return transforms.Compose(ops)
+
+    def _load_augmentation_config(self) -> AugmentationConfig:
+        """Cargar la configuración de augmentation de training.yaml.
+
+        Returns:
+            Configuración de augmentation; deshabilitada si no se puede cargar.
+        """
+        from facial_attributes.config.loader import ConfigLoader
+
+        try:
+            return ConfigLoader().load_training().augmentation
+        except Exception:
+            print(
+                "AVISO: no se pudo cargar config/training.yaml. "
+                "Augmentation deshabilitada.",
+                flush=True,
+            )
+            return AugmentationConfig(enabled=False)
 
     def _evaluate(
         self, preds: list[torch.Tensor], targets: list[torch.Tensor]

@@ -21,12 +21,22 @@ import torch
 from sklearn.metrics import f1_score
 from torch.utils.data import DataLoader
 
+from facial_attributes.data.dataset import DatasetManager
 from facial_attributes.evaluation.evaluator import Evaluator
 from facial_attributes.evaluation.metrics import EvaluationMetrics
 from facial_attributes.evaluation.thresholds import ThresholdOptimizer
 from facial_attributes.model.classifier import FacialAttributeClassifier, ModelConfig
 from facial_attributes.training.config import set_seed
 from facial_attributes.training.dataset import FacialAttributeDataset
+
+
+def _resolve_observable_columns(annotations_file: Path) -> list[str]:
+    """Resolver las columnas observables reales del CSV de anotaciones."""
+    import pandas as pd
+
+    df = pd.read_csv(annotations_file)
+    manager = DatasetManager(annotations_file.parent)
+    return [col for col in manager.get_observable_attribute_columns(df)]
 
 
 def _build_transform(normalize: bool) -> object:
@@ -52,11 +62,21 @@ def load_test_split(
     val_ratio: float = 0.15,
     seed: int = 42,
     normalize: bool = False,
+    attribute_columns: list[str] | None = None,
 ) -> tuple[torch.utils.data.Dataset, list[str]]:
     """Cargar dataset y extraer el split de test (idéntico al entrenamiento).
 
     Reproduce la separación de train_subset.py:
     train=77.5%, val=15%, test=7.5% con seed=42.
+
+    Args:
+        annotations_file: Ruta al CSV de anotaciones.
+        images_dir: Directorio de imágenes.
+        train_ratio: Proporción de entrenamiento.
+        val_ratio: Proporción de validación.
+        seed: Semilla de la división.
+        normalize: Aplicar normalización ImageNet.
+        attribute_columns: Subconjunto de atributos (todos si None).
 
     Returns:
         Tupla de (dataset_test, attribute_columns).
@@ -65,6 +85,7 @@ def load_test_split(
         annotations_file=annotations_file,
         images_dir=images_dir,
         transform=_build_transform(normalize),
+        attribute_columns=attribute_columns,
     )
     attribute_columns = ds.get_attribute_columns()
 
@@ -348,8 +369,21 @@ def main() -> None:
         action="store_false",
         help="No aplicar normalización ImageNet (solo para modelos legacy sin normalizar)",
     )
+    parser.add_argument(
+        "--observable-only",
+        action="store_true",
+        help="Evaluar solo los 24 atributos visualmente observables",
+    )
+    parser.add_argument(
+        "--attributes",
+        default=None,
+        help="Subconjunto de atributos (columnas Atr_* separadas por coma)",
+    )
     parser.set_defaults(normalize=True)
     args = parser.parse_args()
+
+    if args.observable_only and args.attributes:
+        parser.error("--observable-only y --attributes son excluyentes")
 
     set_seed(args.seed)
 
@@ -357,12 +391,24 @@ def main() -> None:
     print("EVALUACIÓN DE MODELO - Atributos Faciales")
     print("=" * 70)
 
-    # 1. Cargar test split
+    # 1. Resolver subconjunto de atributos
+    attribute_subset: list[str] | None = None
+    if args.attributes is not None:
+        attribute_subset = [c.strip() for c in args.attributes.split(",") if c.strip()]
+    elif args.observable_only:
+        attribute_subset = _resolve_observable_columns(args.annotations)
+        print(
+            f"Evaluando solo 24 atributos observables: "
+            f"{len(attribute_subset)} columnas"
+        )
+
+    # 2. Cargar test split
     test_ds, attribute_columns = load_test_split(
         annotations_file=args.annotations,
         images_dir=args.images_dir,
         seed=args.seed,
         normalize=args.normalize,
+        attribute_columns=attribute_subset,
     )
 
     # 2. Cargar modelo
