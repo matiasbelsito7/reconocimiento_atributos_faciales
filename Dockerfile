@@ -14,18 +14,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN pip install --upgrade pip wheel
 
-# Dependencias CPU-only para PyTorch
+# pyyaml no está declarado en pyproject y es requerido en runtime por la config
 RUN pip wheel --no-cache-dir --wheel-dir /wheels \
-    --extra-index-url https://download.pytorch.org/whl/cpu \
-    torch torchvision \
-    fastapi "uvicorn[standard]" gunicorn python-multipart \
-    pillow opencv-python-headless numpy scikit-learn \
     pyyaml
 
-# Empaquetar la aplicación a un wheel instalable con las dependencias
+# Empaquetar la aplicación y todas sus dependencias declaradas
+# (torch/torchvision se resuelven como wheels CPU vía el índice adicional)
 COPY pyproject.toml README.md ./
 COPY src/ ./src/
-RUN pip wheel --no-cache-dir --no-deps --wheel-dir /wheels .
+RUN pip wheel --no-cache-dir --wheel-dir /wheels \
+    --extra-index-url https://download.pytorch.org/whl/cpu .
 
 # ══════════════════════════════════════════════════════════════
 # Stage 2: RUNTIME - imagen ligera sin compiladores
