@@ -212,8 +212,14 @@ class TestFaceNormalizer:
 
         assert normalized.shape == (224, 224, 3)
         assert normalized.dtype == np.float32
-        assert normalized.min() >= 0.0
-        assert normalized.max() <= 1.0
+        # Normalización ImageNet: (128/255 - mean) / std por canal
+        expected = [
+            (128 / 255.0 - 0.485) / 0.229,
+            (128 / 255.0 - 0.456) / 0.224,
+            (128 / 255.0 - 0.406) / 0.225,
+        ]
+        for c in range(3):
+            assert abs(float(normalized[..., c].mean()) - expected[c]) < 1e-4
 
     def test_normalize_batch(self) -> None:
         """Test de normalización de lote."""

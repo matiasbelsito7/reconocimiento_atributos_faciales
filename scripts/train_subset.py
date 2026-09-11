@@ -7,11 +7,12 @@ import time
 from dataclasses import asdict
 from pathlib import Path
 
+import numpy as np
 import torch
 from torch.utils.data import DataLoader, random_split
 
 from facial_attributes.model.classifier import FacialAttributeClassifier, ModelConfig
-from facial_attributes.model.losses import MultilabelLoss
+from facial_attributes.model.losses import LossConfig, MultilabelLoss
 from facial_attributes.training.checkpoint import CheckpointManager
 from facial_attributes.training.config import set_seed
 from facial_attributes.training.dataset import (
@@ -106,7 +107,8 @@ class SubsetTrainer:
         )
         model = FacialAttributeClassifier(model_config).to(self.device)
 
-        loss_fn = MultilabelLoss()
+        pos_weight = self._compute_pos_weight(train_ds, ds.get_attribute_columns())
+        loss_fn = MultilabelLoss(LossConfig(pos_weight=pos_weight))
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
         cm = CheckpointManager(checkpoint_dir)
@@ -148,8 +150,9 @@ class SubsetTrainer:
             val_loss, val_preds, val_targets = 0.0, [], []
             with torch.no_grad():
                 for images, attributes in val_loader:
-                    images, attributes = images.to(self.device), attributes.to(
-                        self.device
+                    images, attributes = (
+                        images.to(self.device),
+                        attributes.to(self.device),
                     )
                     outputs = model(images)
                     val_loss += loss_fn(outputs, attributes).item()
@@ -180,7 +183,7 @@ class SubsetTrainer:
 
             elapsed = time.time() - start
             print(
-                f"epoch {epoch+1}/{num_epochs} "
+                f"epoch {epoch + 1}/{num_epochs} "
                 f"train_loss={train_loss:.4f} val_loss={val_loss_avg:.4f} "
                 f"val_acc={results['accuracy']:.3f} val_f1={results['f1']:.3f} "
                 f"({elapsed:.1f}s) {'[BEST]' if is_best else ''}",
@@ -194,6 +197,29 @@ class SubsetTrainer:
         )
         return history
 
+    def _compute_pos_weight(
+        self, train_ds: torch.utils.data.Subset, attribute_columns: list[str]
+    ) -> torch.Tensor:
+        """Calcular pos_weight por atributo desde el training set.
+
+        Usa el dataframe subyacente (sin leer imágenes) para evitar fuga
+        de información de val/test. Cap de 50 para evitar pesos extremos.
+
+        Args:
+            train_ds: Subconjunto de entrenamiento.
+            attribute_columns: Columnas de atributos.
+
+        Returns:
+            Tensor de pos_weight [num_attributes].
+        """
+        df = train_ds.dataset.df.iloc[train_ds.indices]
+        pos_counts = df[attribute_columns].sum()
+        n = len(train_ds)
+        weights = (n - pos_counts) / (pos_counts + 1e-6)
+        return torch.tensor(
+            np.clip(weights.values, a_min=1.0, a_max=50.0), dtype=torch.float32
+        )
+
     def _build_transform(self) -> object:
         """Construir transformación coherente con la inferencia."""
         from torchvision import transforms
@@ -202,6 +228,9 @@ class SubsetTrainer:
             [
                 transforms.Resize((224, 224)),
                 transforms.ToTensor(),
+                transforms.Normalize(
+                    mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+                ),
             ]
         )
 

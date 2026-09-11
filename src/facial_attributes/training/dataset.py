@@ -9,6 +9,22 @@ import torch
 from PIL import Image
 from torch.utils.data import Dataset
 
+from facial_attributes.training.config import IMAGENET_MEAN, IMAGENET_STD
+
+
+def apply_imagenet_normalization(tensor: torch.Tensor) -> torch.Tensor:
+    """Normalizar tensor CHW [0,1] con mean/std de ImageNet.
+
+    Args:
+        tensor: Tensor de entrada [C, H, W] con valores en [0, 1].
+
+    Returns:
+        Tensor normalizado.
+    """
+    mean = torch.tensor(IMAGENET_MEAN, dtype=tensor.dtype).view(-1, 1, 1)
+    std = torch.tensor(IMAGENET_STD, dtype=tensor.dtype).view(-1, 1, 1)
+    return (tensor - mean) / std
+
 
 class FacialAttributeDataset(Dataset):
     """Dataset de atributos faciales para PyTorch."""
@@ -146,7 +162,7 @@ class CachedAttributeDataset(Dataset):
             Tupla de (imagen, atributos).
         """
         npy_path = self.npy_dir / f"{idx:06d}.npy"
-        image = torch.from_numpy(np.load(npy_path))
+        image = apply_imagenet_normalization(torch.from_numpy(np.load(npy_path)))
 
         row = self.df.iloc[idx]
         attributes = torch.tensor(

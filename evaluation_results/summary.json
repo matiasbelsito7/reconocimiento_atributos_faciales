@@ -1,0 +1,26 @@
+{
+  "worst_attributes": [
+    "Atr_Mustache",
+    "Atr_Oval_Face",
+    "Atr_Rosy_Cheeks",
+    "Atr_Big_Lips",
+    "Atr_Wearing_Necklace"
+  ],
+  "best_attributes": [
+    "Atr_Male",
+    "Atr_No_Beard",
+    "Atr_Eyeglasses",
+    "Atr_Mouth_Slightly_Open",
+    "Atr_Young"
+  ],
+  "global_metrics": {
+    "accuracy": 0.025341780593531177,
+    "precision": 0.8394817270027118,
+    "recall": 0.7307130278391847,
+    "f1": 0.7813301282051283,
+    "macro_f1": 0.6607015349280279,
+    "hamming_loss": 0.09099699899966655,
+    "average_precision": 0.8890767613423445,
+    "macro_roc_auc": 0.9289476522418638
+  }
+}

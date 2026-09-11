@@ -5,6 +5,9 @@ from dataclasses import dataclass
 import numpy as np
 from PIL import Image
 
+IMAGENET_MEAN = np.array([0.485, 0.456, 0.406], dtype=np.float32)
+IMAGENET_STD = np.array([0.229, 0.224, 0.225], dtype=np.float32)
+
 
 @dataclass
 class NormalizerConfig:
@@ -23,11 +26,14 @@ class FaceNormalizer:
     def normalize(self, face: Image.Image) -> np.ndarray:
         """Normalizar un rostro extraído.
 
+        Aplica escalado [0,1] y normalización con mean/std de ImageNet,
+        consistente con el preprocesamiento de entrenamiento/evaluación.
+
         Args:
             face: Imagen del rostro.
 
         Returns:
-            Array numpy normalizado.
+            Array numpy normalizado (HWC).
         """
         resized = face.resize(self.config.target_size, Image.Resampling.LANCZOS)
 
@@ -35,6 +41,7 @@ class FaceNormalizer:
 
         if self.config.normalize_pixels:
             arr = arr / 255.0
+            arr = (arr - IMAGENET_MEAN) / IMAGENET_STD
 
         return arr
 

@@ -28,7 +28,9 @@ Cada archivo documenta:
 | Fase 12-14: API + Frontend + Docker | `fase-12-14-api-frontend-docker.md` | Completada |
 | T-13.8: Multi-face UI | `t-13.8-multi-face-ui.md` | Completada |
 | T-14.6: CD del modelo champion | `fase-14-cd.md` | Completada |
+| Evaluación inicial del modelo | `evaluacion-inicial-modelos.md` | Completada |
+| P1: Correcciones entrenamiento + inferencia | `P1-inferencia-entrenamiento.md` | Completada |
 
 ---
 
-*Última actualización: 2026-09-09*
+*Última actualización: 2026-09-10*
