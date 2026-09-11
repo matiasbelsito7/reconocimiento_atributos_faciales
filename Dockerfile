@@ -1,7 +1,7 @@
 # ══════════════════════════════════════════════════════════════
 # Stage 1: BUILDER - instala dependencias en wheels pre-compilados
 # ══════════════════════════════════════════════════════════════
-FROM python:3.11-slim AS builder
+FROM python:3.11-slim-bookworm AS builder
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
@@ -30,7 +30,7 @@ RUN pip wheel --no-cache-dir --no-deps --wheel-dir /wheels .
 # ══════════════════════════════════════════════════════════════
 # Stage 2: RUNTIME - imagen ligera sin compiladores
 # ══════════════════════════════════════════════════════════════
-FROM python:3.11-slim AS runtime
+FROM python:3.11-slim-bookworm AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
