@@ -6,7 +6,12 @@ import pandas as pd
 import pytest
 
 from facial_attributes.model_registry.schemas import ModelMetrics
-from facial_attributes.retraining.criteria import AcceptanceCriteria, CriteriaResult
+from facial_attributes.retraining.criteria import (
+    AcceptanceCriteria,
+    CriteriaResult,
+    MajorityPromotionPolicy,
+    PromotionDecision,
+)
 from facial_attributes.retraining.merger import DatasetMerger, MergeResult
 from facial_attributes.retraining.pipeline import (
     RetrainingConfig,
@@ -220,6 +225,76 @@ class TestAcceptanceCriteria:
         assert "accuracy" in comparison
         assert "f1_score" in comparison
         assert comparison["accuracy"]["improved"] is True
+
+
+class TestMajorityPromotionPolicy:
+    """Tests para MajorityPromotionPolicy."""
+
+    def test_promote_when_majority_improved(self) -> None:
+        """Test de promoción cuando el candidato mejora la mayoría de métricas."""
+        policy = MajorityPromotionPolicy()
+
+        candidate = ModelMetrics(
+            accuracy=0.95,
+            precision=0.93,
+            recall=0.96,
+            f1_score=0.94,
+            hamming_loss=0.04,
+            average_precision=0.90,
+        )
+        champion = ModelMetrics(
+            accuracy=0.90,
+            precision=0.91,
+            recall=0.88,
+            f1_score=0.89,
+            hamming_loss=0.05,
+            average_precision=0.85,
+        )
+
+        decision = policy.evaluate(candidate=candidate, champion=champion)
+
+        assert isinstance(decision, PromotionDecision)
+        assert decision.should_promote is True
+        assert decision.wins == 6
+        assert decision.losses == 0
+
+    def test_keep_champion_when_single_metric_improved(self) -> None:
+        """Test de que una sola métrica mejor no promueve al candidato."""
+        policy = MajorityPromotionPolicy()
+
+        candidate = ModelMetrics(accuracy=0.91, f1_score=0.88)
+        champion = ModelMetrics(
+            accuracy=0.90, precision=0.90, recall=0.90, f1_score=0.89
+        )
+
+        decision = policy.evaluate(candidate=candidate, champion=champion)
+
+        assert decision.should_promote is False
+        assert decision.wins == 1
+        assert decision.losses == 3
+
+    def test_hamming_loss_lower_is_better(self) -> None:
+        """Test de que hamming_loss menor cuenta como mejora."""
+        policy = MajorityPromotionPolicy()
+
+        candidate = ModelMetrics(hamming_loss=0.03)
+        champion = ModelMetrics(hamming_loss=0.05)
+
+        decision = policy.evaluate(candidate=candidate, champion=champion)
+
+        assert decision.per_metric["hamming_loss"]["result"] == "win"
+
+    def test_tie_does_not_promote(self) -> None:
+        """Test de empate en métricas sin promoción."""
+        policy = MajorityPromotionPolicy()
+
+        candidate = ModelMetrics(accuracy=0.90, f1_score=0.89, precision=0.92)
+        champion = ModelMetrics(accuracy=0.90, f1_score=0.89, precision=0.90)
+
+        decision = policy.evaluate(candidate=candidate, champion=champion)
+
+        assert decision.should_promote is False
+        assert decision.wins == 1
 
 
 class TestRetrainingConfig:

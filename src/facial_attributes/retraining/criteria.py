@@ -176,3 +176,114 @@ class AcceptanceCriteria:
             }
 
         return comparison
+
+
+@dataclass
+class PromotionDecision:
+    """Decisión de promoción de un candidato a champion.
+
+    Attributes:
+        should_promote: Si el candidato debe reemplazar al champion actual.
+        wins: Métricas en las que el candidato supera al champion.
+        losses: Métricas en las que el candidato es superado por el champion.
+        ties: Métricas con valor idéntico.
+        total_metrics: Métricas totales consideradas.
+        per_metric: Detalle por métrica.
+        summary: Resumen legible de la decisión.
+    """
+
+    should_promote: bool
+    wins: int = 0
+    losses: int = 0
+    ties: int = 0
+    total_metrics: int = 0
+    per_metric: dict[str, dict[str, object]] = field(default_factory=dict)
+    summary: str = ""
+
+
+class MajorityPromotionPolicy:
+    """Política que promueve un candidato solo si mejora la mayoría de métricas.
+
+    El champion solo se reemplaza cuando el candidato gana en más de la mitad
+    de las métricas comparadas, evitando promociones por una sola métrica
+    (ej: ganar F1 pero empeorar accuracy, precision y recall).
+    """
+
+    HIGHER_BETTER = ("accuracy", "precision", "recall", "f1_score", "average_precision")
+    LOWER_BETTER = ("hamming_loss",)
+
+    def __init__(self, compared_metrics: list[str] | None = None) -> None:
+        """Inicializar política.
+
+        Args:
+            compared_metrics: Métricas a comparar. Por defecto todas las de
+                ``ModelMetrics`` con dirección conocida.
+        """
+        self.compared_metrics = compared_metrics or [
+            *self.HIGHER_BETTER,
+            *self.LOWER_BETTER,
+        ]
+
+    def evaluate(
+        self,
+        candidate: ModelMetrics,
+        champion: ModelMetrics,
+    ) -> PromotionDecision:
+        """Evaluar si el candidato debe reemplazar al champion.
+
+        Args:
+            candidate: Métricas del modelo candidato.
+            champion: Métricas del modelo champion vigente.
+
+        Returns:
+            Decisión de promoción con detalle por métrica.
+        """
+        per_metric: dict[str, dict[str, object]] = {}
+        wins = losses = ties = 0
+        active = 0
+
+        for metric_name in self.compared_metrics:
+            cand_value = getattr(candidate, metric_name, 0.0)
+            champ_value = getattr(champion, metric_name, 0.0)
+
+            if cand_value != 0.0 or champ_value != 0.0:
+                active += 1
+
+            is_lower_better = metric_name in self.LOWER_BETTER
+            if cand_value == champ_value:
+                result = "tie"
+                ties += 1
+            elif (is_lower_better and cand_value < champ_value) or (
+                not is_lower_better and cand_value > champ_value
+            ):
+                result = "win"
+                wins += 1
+            else:
+                result = "loss"
+                losses += 1
+
+            per_metric[metric_name] = {
+                "candidate": cand_value,
+                "champion": champ_value,
+                "result": result,
+            }
+
+        total = active
+        should_promote = wins > total / 2
+
+        if should_promote:
+            summary = (
+                f"Candidate wins {wins}/{total} metrics, promotes as new champion."
+            )
+        else:
+            summary = f"Candidate wins {wins}/{total} metrics, keeps champion."
+
+        return PromotionDecision(
+            should_promote=should_promote,
+            wins=wins,
+            losses=losses,
+            ties=ties,
+            total_metrics=total,
+            per_metric=per_metric,
+            summary=summary,
+        )

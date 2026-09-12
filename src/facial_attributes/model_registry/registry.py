@@ -15,6 +15,10 @@ from facial_attributes.model_registry.schemas import (
     ModelState,
     ModelVersion,
 )
+from facial_attributes.retraining.criteria import (
+    MajorityPromotionPolicy,
+    PromotionDecision,
+)
 
 
 class ModelRegistry:
@@ -306,12 +310,14 @@ class ModelRegistry:
                 ) * 100
                 improvement_percent[metric] = improvement
 
-        if model_b.metrics.f1_score > model_a.metrics.f1_score:
-            winner = model_b_id
-        elif model_b.metrics.f1_score < model_a.metrics.f1_score:
-            winner = model_a_id
-        else:
-            winner = "tie"
+        policy = MajorityPromotionPolicy()
+        decision = policy.evaluate(candidate=model_b.metrics, champion=model_a.metrics)
+
+        winner = (
+            model_b_id
+            if decision.should_promote
+            else ("tie" if decision.wins == decision.losses else model_a_id)
+        )
 
         return ComparisonResult(
             model_a_id=model_a_id,
@@ -348,6 +354,49 @@ class ModelRegistry:
 
         self._save_registry()
         return True
+
+    def promote_candidate_to_production(
+        self,
+        model_id: str,
+        policy: MajorityPromotionPolicy | None = None,
+    ) -> PromotionDecision:
+        """Promover un candidato a champion solo si mejora la mayoría de métricas.
+
+        Si no existe champion, el modelo se promociona directamente. Si existe,
+        se compara contra el champion vigente y solo se reemplaza cuando el
+        candidato gana en la mayoría de las métricas (`MajorityPromotionPolicy`).
+
+        Args:
+            model_id: ID del modelo candidato.
+            policy: Política de comparación por mayoría.
+
+        Returns:
+            Decisión de promoción con detalle por métrica.
+        """
+        if model_id not in self._models:
+            raise KeyError(f"Model '{model_id}' not found")
+
+        policy = policy or MajorityPromotionPolicy()
+        candidate = self._models[model_id]
+        champion = self.get_production_model()
+
+        if champion is None or champion.model_id == model_id:
+            decision = PromotionDecision(
+                should_promote=True, total_metrics=len(policy.compared_metrics)
+            )
+            decision.summary = "No champion to compare. Candidate promoted by default."
+            if champion is None:
+                self.promote_to_production(model_id)
+            return decision
+
+        decision = policy.evaluate(
+            candidate=candidate.metrics, champion=champion.metrics
+        )
+
+        if decision.should_promote:
+            self.promote_to_production(model_id)
+
+        return decision
 
     def get_production_model(self) -> ModelMetadata | None:
         """Obtener modelo en producción.

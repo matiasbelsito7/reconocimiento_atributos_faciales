@@ -300,6 +300,85 @@ class TestModelRegistry:
         assert model_a.state == ModelState.ARCHIVED
         assert model_b.state == ModelState.PRODUCTION
 
+    def test_promote_candidate_promotes_when_no_champion(self, tmp_path: Path) -> None:
+        """Test de promoción de candidato sin champion vigente."""
+        registry = ModelRegistry(registry_dir=tmp_path / "registry")
+
+        model_id = registry.register_model(name="candidate", version="1.0.0")
+
+        decision = registry.promote_candidate_to_production(model_id)
+
+        assert decision.should_promote is True
+        assert registry.get_production_model() is not None
+        assert registry.get_production_model().model_id == model_id
+
+    def test_promote_candidate_promotes_on_majority(self, tmp_path: Path) -> None:
+        """Test de que se promueve al candidato que gana la mayoría de métricas."""
+        registry = ModelRegistry(registry_dir=tmp_path / "registry")
+
+        champion_id = registry.register_model(name="champion", version="1.0.0")
+        registry.update_model_metrics(
+            champion_id,
+            ModelMetrics(
+                accuracy=0.90,
+                precision=0.91,
+                recall=0.88,
+                f1_score=0.89,
+                hamming_loss=0.05,
+                average_precision=0.85,
+            ),
+        )
+        registry.promote_to_production(champion_id)
+
+        candidate_id = registry.register_model(name="candidate", version="2.0.0")
+        registry.update_model_metrics(
+            candidate_id,
+            ModelMetrics(
+                accuracy=0.95,
+                precision=0.93,
+                recall=0.96,
+                f1_score=0.94,
+                hamming_loss=0.04,
+                average_precision=0.90,
+            ),
+        )
+
+        decision = registry.promote_candidate_to_production(candidate_id)
+
+        assert decision.should_promote is True
+        assert registry.get_production_model().model_id == candidate_id
+        assert registry.get_model(champion_id).state == ModelState.ARCHIVED
+
+    def test_promote_candidate_keeps_champion_on_minority(self, tmp_path: Path) -> None:
+        """Test de que el champion se mantiene si el candidato no gana la mayoría."""
+        registry = ModelRegistry(registry_dir=tmp_path / "registry")
+
+        champion_id = registry.register_model(name="champion", version="1.0.0")
+        registry.update_model_metrics(
+            champion_id,
+            ModelMetrics(
+                accuracy=0.90,
+                precision=0.90,
+                recall=0.90,
+                f1_score=0.90,
+                hamming_loss=0.05,
+                average_precision=0.85,
+            ),
+        )
+        registry.promote_to_production(champion_id)
+
+        candidate_id = registry.register_model(name="candidate", version="2.0.0")
+        registry.update_model_metrics(
+            candidate_id,
+            ModelMetrics(accuracy=0.95, f1_score=0.89),
+        )
+
+        decision = registry.promote_candidate_to_production(candidate_id)
+
+        assert decision.should_promote is False
+        assert registry.get_production_model().model_id == champion_id
+        assert registry.get_model(candidate_id).state == ModelState.DEVELOPMENT
+
     def test_get_production_model(self, tmp_path: Path) -> None:
         """Test de obtención de modelo en producción."""
         registry = ModelRegistry(registry_dir=tmp_path / "registry")
