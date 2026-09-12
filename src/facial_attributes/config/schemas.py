@@ -23,6 +23,9 @@ class LoggingConfig:
     level: str = "INFO"
     format: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     file: str = "logs/pipeline.log"
+    log_interval: int = 10
+    save_tensorboard: bool = False
+    tensorboard_dir: str = "logs/tensorboard/"
 
 
 @dataclass

@@ -92,6 +92,11 @@ def sample_training_yaml(tmp_path: Path) -> Path:
         "augmentation": {
             "enabled": True,
         },
+        "logging": {
+            "log_interval": 10,
+            "save_tensorboard": True,
+            "tensorboard_dir": "logs/tensorboard/",
+        },
         "mlflow": {
             "enabled": True,
         },
@@ -303,6 +308,8 @@ class TestConfigLoader:
         assert isinstance(config, TrainingConfig)
         assert config.seed == 42
         assert config.hyperparameters.learning_rate == 0.001
+        assert config.logging.log_interval == 10
+        assert config.augmentation.enabled
 
     def test_load_inference(self, tmp_path: Path, sample_inference_yaml: Path) -> None:
         """Test de carga de configuración de inferencia."""
