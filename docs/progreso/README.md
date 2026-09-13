@@ -32,6 +32,7 @@ Cada archivo documenta:
 | P1: Correcciones entrenamiento + inferencia | `P1-inferencia-entrenamiento.md` | Completada |
 | Champion promotion por mayoría de métricas | `champion-promotion-mayoria.md` | Completada |
 | P2: Exp A champion registrado | `P2-expA-champion.md` | Completada |
+| P2: Campaña de experimentos | `P2-Experimentos-champion.md` | Completada |
 
 ---
 

@@ -1,0 +1,124 @@
+{
+  "per_attribute": [
+    {
+      "attribute": "Atr_5_o_Clock_Shadow",
+      "threshold": 0.76,
+      "f1_score": 0.6847960444993819
+    },
+    {
+      "attribute": "Atr_Bald",
+      "threshold": 0.97,
+      "f1_score": 0.7682926829268293
+    },
+    {
+      "attribute": "Atr_Bangs",
+      "threshold": 0.92,
+      "f1_score": 0.855188141391106
+    },
+    {
+      "attribute": "Atr_Black_Hair",
+      "threshold": 0.6,
+      "f1_score": 0.7927321668909825
+    },
+    {
+      "attribute": "Atr_Blond_Hair",
+      "threshold": 0.78,
+      "f1_score": 0.8497175141242937
+    },
+    {
+      "attribute": "Atr_Blurry",
+      "threshold": 0.9400000000000001,
+      "f1_score": 0.5825242718446602
+    },
+    {
+      "attribute": "Atr_Brown_Hair",
+      "threshold": 0.74,
+      "f1_score": 0.6636155606407322
+    },
+    {
+      "attribute": "Atr_Eyeglasses",
+      "threshold": 0.92,
+      "f1_score": 0.9680170575692963
+    },
+    {
+      "attribute": "Atr_Goatee",
+      "threshold": 0.93,
+      "f1_score": 0.7553648068669528
+    },
+    {
+      "attribute": "Atr_Gray_Hair",
+      "threshold": 0.97,
+      "f1_score": 0.738562091503268
+    },
+    {
+      "attribute": "Atr_Heavy_Makeup",
+      "threshold": 0.73,
+      "f1_score": 0.8825187969924813
+    },
+    {
+      "attribute": "Atr_Mouth_Slightly_Open",
+      "threshold": 0.5700000000000001,
+      "f1_score": 0.9153737658674189
+    },
+    {
+      "attribute": "Atr_Mustache",
+      "threshold": 0.85,
+      "f1_score": 0.6222222222222222
+    },
+    {
+      "attribute": "Atr_No_Beard",
+      "threshold": 0.35000000000000003,
+      "f1_score": 0.9707248132444983
+    },
+    {
+      "attribute": "Atr_Receding_Hairline",
+      "threshold": 0.84,
+      "f1_score": 0.6236559139784946
+    },
+    {
+      "attribute": "Atr_Sideburns",
+      "threshold": 0.93,
+      "f1_score": 0.762589928057554
+    },
+    {
+      "attribute": "Atr_Smiling",
+      "threshold": 0.56,
+      "f1_score": 0.9147232857640097
+    },
+    {
+      "attribute": "Atr_Straight_Hair",
+      "threshold": 0.5,
+      "f1_score": 0.6185044359949303
+    },
+    {
+      "attribute": "Atr_Wavy_Hair",
+      "threshold": 0.71,
+      "f1_score": 0.76
+    },
+    {
+      "attribute": "Atr_Wearing_Earrings",
+      "threshold": 0.8200000000000001,
+      "f1_score": 0.7730769230769231
+    },
+    {
+      "attribute": "Atr_Wearing_Hat",
+      "threshold": 0.89,
+      "f1_score": 0.9221183800623053
+    },
+    {
+      "attribute": "Atr_Wearing_Lipstick",
+      "threshold": 0.74,
+      "f1_score": 0.9153605015673981
+    },
+    {
+      "attribute": "Atr_Wearing_Necklace",
+      "threshold": 0.81,
+      "f1_score": 0.44280442804428044
+    },
+    {
+      "attribute": "Atr_Wearing_Necktie",
+      "threshold": 0.9,
+      "f1_score": 0.8252788104089219
+    }
+  ]
+}

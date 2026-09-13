@@ -1,0 +1,22 @@
+{
+  "accuracy": 0.05835278426142047,
+  "precision": 0.6588860983897178,
+  "recall": 0.9314954051796157,
+  "f1": 0.7718265985982521,
+  "hamming": 0.10991163721240413,
+  "average_precision": 0.9014405741098319,
+  "best_attributes": [
+    "Atr_No_Beard",
+    "Atr_Eyeglasses",
+    "Atr_Mouth_Slightly_Open",
+    "Atr_Smiling",
+    "Atr_Wearing_Lipstick"
+  ],
+  "worst_attributes": [
+    "Atr_Mustache",
+    "Atr_Receding_Hairline",
+    "Atr_Gray_Hair",
+    "Atr_Blurry",
+    "Atr_Wearing_Necklace"
+  ]
+}

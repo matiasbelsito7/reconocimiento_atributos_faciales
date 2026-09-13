@@ -4,9 +4,9 @@
       "model_id": "18058005-1571-4278-b593-8edc6cd5d16c",
       "name": "facial_attribute_classifier",
       "version": "2.0.0",
-      "state": "production",
+      "state": "archived",
       "created_at": "2026-09-13T02:23:34.297278",
-      "updated_at": "2026-09-13T02:23:34.304280",
+      "updated_at": "2026-09-13T15:39:54.410022",
       "description": "Champion P2 (Exp A): 10 epochs con augmentation en los 40 atributos. Mejor val_loss 0.4560 (epoch 7). Evaluado en test (2999 muestras, threshold 0.5): F1 0.7320, ROC-AUC 0.9302, Hamming 0.1444.",
       "metrics": {
         "accuracy": 0.0040013337779259755,
@@ -116,6 +116,109 @@
         "champion_title": "candidate_expA"
       },
       "parent_model_id": ""
+    },
+    "2e095b29-3a87-4f70-bef0-a79823d1e1be": {
+      "model_id": "2e095b29-3a87-4f70-bef0-a79823d1e1be",
+      "name": "facial_attribute_classifier",
+      "version": "2.1.0",
+      "state": "production",
+      "created_at": "2026-09-13T15:39:54.398994",
+      "updated_at": "2026-09-13T15:39:54.410022",
+      "description": "Champion P2 (Exp B): 10 epochs sobre los 24 atributos observables con augmentation. Mejor val_loss 0.3683 (epoch 8). Evaluado en test (2999 muestras, threshold 0.5): F1 0.7718, ROC-AUC 0.9614, Hamming 0.1099. Supera a Exp A en 6/6 metricas sobre las mismas 24 columnas (15/24 atributos por F1).",
+      "metrics": {
+        "accuracy": 0.05835278426142047,
+        "precision": 0.6588860983897178,
+        "recall": 0.9314954051796157,
+        "f1_score": 0.7718265985982521,
+        "hamming_loss": 0.10991163721240413,
+        "average_precision": 0.9014405741098319,
+        "per_attribute": {
+          "Atr_5_o_Clock_Shadow": 0.6465028355387523,
+          "Atr_Bald": 0.5877862595419847,
+          "Atr_Bangs": 0.7894736842105263,
+          "Atr_Black_Hair": 0.7868852459016393,
+          "Atr_Blond_Hair": 0.7960591133004926,
+          "Atr_Blurry": 0.4,
+          "Atr_Brown_Hair": 0.6165865384615384,
+          "Atr_Eyeglasses": 0.9373737373737374,
+          "Atr_Goatee": 0.6348733233979136,
+          "Atr_Gray_Hair": 0.5050167224080268,
+          "Atr_Heavy_Makeup": 0.8525724167747514,
+          "Atr_Mouth_Slightly_Open": 0.9129526462395543,
+          "Atr_Mustache": 0.5378151260504201,
+          "Atr_No_Beard": 0.968189233278956,
+          "Atr_Receding_Hairline": 0.5269320843091335,
+          "Atr_Sideburns": 0.6289517470881864,
+          "Atr_Smiling": 0.9120879120879121,
+          "Atr_Straight_Hair": 0.6185044359949303,
+          "Atr_Wavy_Hair": 0.7158176943699732,
+          "Atr_Wearing_Earrings": 0.7124719940253921,
+          "Atr_Wearing_Hat": 0.898876404494382,
+          "Atr_Wearing_Lipstick": 0.9103139013452914,
+          "Atr_Wearing_Necklace": 0.36529126213592233,
+          "Atr_Wearing_Necktie": 0.7157001414427157
+        }
+      },
+      "config": {
+        "backbone": "resnet18",
+        "num_attributes": 24,
+        "image_size": [
+          224,
+          224
+        ],
+        "learning_rate": 0.0003,
+        "batch_size": 32,
+        "epochs": 10,
+        "dropout": 0.4,
+        "optimizer": "adam",
+        "loss_function": "bce_with_logits",
+        "additional_config": {
+          "attribute_scope": "observable24",
+          "augmentation": "flip_h=True, rot=15, brightness=[0.8,1.2], contrast=[0.8,1.2]",
+          "pretrained": "false",
+          "num_workers": "0",
+          "seed": "42"
+        }
+      },
+      "dataset": {
+        "name": "celeba_subset_40000",
+        "version": "",
+        "num_samples": 40000,
+        "num_attributes": 24,
+        "train_split": 0.775,
+        "val_split": 0.15,
+        "test_split": 0.075,
+        "path": "data/processed/celeba_subset_40000.csv"
+      },
+      "artifacts": [
+        {
+          "name": "best_model",
+          "path": "checkpoints_40k_obs24/best_model.pt",
+          "size_bytes": 0,
+          "artifact_type": "model"
+        },
+        {
+          "name": "exp_b_summary",
+          "path": "evaluation_results_v2/obs24/exp_b/summary.json",
+          "size_bytes": 0,
+          "artifact_type": "report"
+        },
+        {
+          "name": "exp_a_obs24_summary",
+          "path": "evaluation_results_v2/obs24/exp_a/summary.json",
+          "size_bytes": 0,
+          "artifact_type": "report"
+        }
+      ],
+      "tags": {
+        "experiment": "exp_b",
+        "attribute_scope": "observable24",
+        "augmentation": "true",
+        "dataset": "celeba_subset_40000",
+        "best_epoch": "8",
+        "champion_decision": "6/6 vs Exp A (obs24)"
+      },
+      "parent_model_id": ""
     }
   },
   "versions": {
@@ -174,6 +277,50 @@
             "Atr_Wearing_Necklace": 0.3623649078194533,
             "Atr_Wearing_Necktie": 0.6541822721598003,
             "Atr_Young": 0.9205397301349325
+          }
+        },
+        "artifact_path": ""
+      }
+    ],
+    "2e095b29-3a87-4f70-bef0-a79823d1e1be": [
+      {
+        "version_id": "17f42edb-17e6-4571-b8e8-8d861a90ec88",
+        "model_id": "2e095b29-3a87-4f70-bef0-a79823d1e1be",
+        "version": "2.1.0",
+        "state": "production",
+        "created_at": "2026-09-13T15:39:54.398994",
+        "metrics": {
+          "accuracy": 0.05835278426142047,
+          "precision": 0.6588860983897178,
+          "recall": 0.9314954051796157,
+          "f1_score": 0.7718265985982521,
+          "hamming_loss": 0.10991163721240413,
+          "average_precision": 0.9014405741098319,
+          "per_attribute": {
+            "Atr_5_o_Clock_Shadow": 0.6465028355387523,
+            "Atr_Bald": 0.5877862595419847,
+            "Atr_Bangs": 0.7894736842105263,
+            "Atr_Black_Hair": 0.7868852459016393,
+            "Atr_Blond_Hair": 0.7960591133004926,
+            "Atr_Blurry": 0.4,
+            "Atr_Brown_Hair": 0.6165865384615384,
+            "Atr_Eyeglasses": 0.9373737373737374,
+            "Atr_Goatee": 0.6348733233979136,
+            "Atr_Gray_Hair": 0.5050167224080268,
+            "Atr_Heavy_Makeup": 0.8525724167747514,
+            "Atr_Mouth_Slightly_Open": 0.9129526462395543,
+            "Atr_Mustache": 0.5378151260504201,
+            "Atr_No_Beard": 0.968189233278956,
+            "Atr_Receding_Hairline": 0.5269320843091335,
+            "Atr_Sideburns": 0.6289517470881864,
+            "Atr_Smiling": 0.9120879120879121,
+            "Atr_Straight_Hair": 0.6185044359949303,
+            "Atr_Wavy_Hair": 0.7158176943699732,
+            "Atr_Wearing_Earrings": 0.7124719940253921,
+            "Atr_Wearing_Hat": 0.898876404494382,
+            "Atr_Wearing_Lipstick": 0.9103139013452914,
+            "Atr_Wearing_Necklace": 0.36529126213592233,
+            "Atr_Wearing_Necktie": 0.7157001414427157
           }
         },
         "artifact_path": ""
