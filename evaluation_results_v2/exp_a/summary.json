@@ -1,0 +1,26 @@
+{
+  "worst_attributes": [
+    "Atr_Chubby",
+    "Atr_Blurry",
+    "Atr_Double_Chin",
+    "Atr_Wearing_Necklace",
+    "Atr_Pale_Skin"
+  ],
+  "best_attributes": [
+    "Atr_Male",
+    "Atr_No_Beard",
+    "Atr_Eyeglasses",
+    "Atr_Young",
+    "Atr_Wearing_Lipstick"
+  ],
+  "global_metrics": {
+    "accuracy": 0.0040013337779259755,
+    "precision": 0.6233338601759655,
+    "recall": 0.8866199557870283,
+    "f1": 0.7320227065319949,
+    "macro_f1": 0.6620297976238753,
+    "hamming_loss": 0.14442314104701567,
+    "average_precision": 0.8480217486475843,
+    "macro_roc_auc": 0.9301797510758775
+  }
+}

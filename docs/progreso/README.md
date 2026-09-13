@@ -30,7 +30,9 @@ Cada archivo documenta:
 | T-14.6: CD del modelo champion | `fase-14-cd.md` | Completada |
 | Evaluación inicial del modelo | `evaluacion-inicial-modelos.md` | Completada |
 | P1: Correcciones entrenamiento + inferencia | `P1-inferencia-entrenamiento.md` | Completada |
+| Champion promotion por mayoría de métricas | `champion-promotion-mayoria.md` | Completada |
+| P2: Exp A champion registrado | `P2-expA-champion.md` | Completada |
 
 ---
 
-*Última actualización: 2026-09-10*
+*Última actualización: 2026-09-13*

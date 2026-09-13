@@ -76,7 +76,9 @@ data/processed/*
 !data/processed/.gitkeep
 
 # Models
-models/
+# Pesos y artefactos binarios no se versionan; el metadata del Model Registry sí.
+models/*
+!models/registry/
 *.pt
 *.pth
 *.onnx
