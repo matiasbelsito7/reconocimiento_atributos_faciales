@@ -5,82 +5,51 @@
 thresholds:
   default: 0.5
   per_attribute:
-    5_o_Clock_Shadow: 0.74
-    Arched_Eyebrows: 0.72
-    Attractive: 0.42
-    Bags_Under_Eyes: 0.62
-    Bald: 0.93
-    Bangs: 0.90
-    Big_Lips: 0.57
-    Big_Nose: 0.65
-    Black_Hair: 0.69
-    Blond_Hair: 0.82
-    Blurry: 0.83
-    Brown_Hair: 0.68
-    Bushy_Eyebrows: 0.75
-    Chubby: 0.91
-    Double_Chin: 0.95
-    Eyeglasses: 0.75
-    Goatee: 0.79
-    Gray_Hair: 0.92
-    Heavy_Makeup: 0.68
-    High_Cheekbones: 0.52
-    Male: 0.55
-    Mouth_Slightly_Open: 0.38
+    5_o_Clock_Shadow: 0.76
+    Bald: 0.97
+    Bangs: 0.92
+    Black_Hair: 0.60
+    Blond_Hair: 0.78
+    Blurry: 0.94
+    Brown_Hair: 0.74
+    Eyeglasses: 0.92
+    Goatee: 0.93
+    Gray_Hair: 0.97
+    Heavy_Makeup: 0.73
+    Mouth_Slightly_Open: 0.57
     Mustache: 0.85
-    Narrow_Eyes: 0.73
-    No_Beard: 0.37
-    Oval_Face: 0.49
-    Pale_Skin: 0.90
-    Pointy_Nose: 0.49
-    Receding_Hairline: 0.82
-    Rosy_Cheeks: 0.96
-    Sideburns: 0.87
-    Smiling: 0.47
-    Straight_Hair: 0.60
-    Wavy_Hair: 0.57
+    No_Beard: 0.35
+    Receding_Hairline: 0.84
+    Sideburns: 0.93
+    Smiling: 0.56
+    Straight_Hair: 0.50
+    Wavy_Hair: 0.71
     Wearing_Earrings: 0.82
-    Wearing_Hat: 0.99
-    Wearing_Lipstick: 0.54
-    Wearing_Necklace: 0.66
-    Wearing_Necktie: 0.91
-    Young: 0.49
+    Wearing_Hat: 0.89
+    Wearing_Lipstick: 0.74
+    Wearing_Necklace: 0.81
+    Wearing_Necktie: 0.90
 
   # Margen de incerteza por defecto (0.0 = sin incerteza)
   margin_default: 0.0
   # Márgenes por atributo estimados en validación. Cuando un score cae en
   # [umbral - margen, umbral + margen] la decisión es "incierto".
   margins_per_attribute:
-    5_o_Clock_Shadow: 0.10
-    Arched_Eyebrows: 0.12
-    Attractive: 0.00
-    Bags_Under_Eyes: 0.19
+    5_o_Clock_Shadow: 0.00
     Bald: 0.00
     Bangs: 0.00
-    Big_Lips: 0.20
-    Big_Nose: 0.11
     Black_Hair: 0.00
     Blond_Hair: 0.00
-    Blurry: 0.10
-    Brown_Hair: 0.00
-    Bushy_Eyebrows: 0.03
-    Chubby: 0.06
-    Double_Chin: 0.04
+    Blurry: 0.03
+    Brown_Hair: 0.09
     Eyeglasses: 0.00
-    Goatee: 0.03
+    Goatee: 0.00
     Gray_Hair: 0.00
     Heavy_Makeup: 0.00
-    High_Cheekbones: 0.00
-    Male: 0.00
     Mouth_Slightly_Open: 0.00
-    Mustache: 0.13
-    Narrow_Eyes: 0.17
+    Mustache: 0.12
     No_Beard: 0.00
-    Oval_Face: 0.31
-    Pale_Skin: 0.05
-    Pointy_Nose: 0.33
     Receding_Hairline: 0.07
-    Rosy_Cheeks: 0.03
     Sideburns: 0.00
     Smiling: 0.00
     Straight_Hair: 0.20
@@ -88,9 +57,8 @@ thresholds:
     Wearing_Earrings: 0.00
     Wearing_Hat: 0.00
     Wearing_Lipstick: 0.00
-    Wearing_Necklace: 0.27
+    Wearing_Necklace: 0.17
     Wearing_Necktie: 0.00
-    Young: 0.00
 
 face_detection:
   model: opencv_dnn  # opencv_dnn | mtcnn | retinaface
@@ -122,5 +90,5 @@ output:
 # Configuración de inferencia
 inference:
   device: auto
-  model_path: checkpoints/best_model.pt
-  num_attributes: 40
+  model_path: checkpoints_40k_obs24/best_model.pt
+  num_attributes: 24

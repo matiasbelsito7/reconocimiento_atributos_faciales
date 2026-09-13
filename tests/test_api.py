@@ -65,8 +65,8 @@ class TestAttributesEndpoint:
     def test_attributes_count(self, client: TestClient) -> None:
         response = client.get("/api/attributes")
         data = response.json()
-        assert data["num_attributes"] == 40
-        assert len(data["attributes"]) == 40
+        assert data["num_attributes"] == len(CELEBA_ATTRIBUTE_NAMES)
+        assert len(data["attributes"]) == len(CELEBA_ATTRIBUTE_NAMES)
 
     def test_attributes_structure(self, client: TestClient) -> None:
         response = client.get("/api/attributes")
@@ -226,7 +226,7 @@ class TestDependencies:
     """Tests para el módulo de dependencias."""
 
     def test_celeba_attributes_count(self) -> None:
-        assert len(CELEBA_ATTRIBUTE_NAMES) == 40
+        assert len(CELEBA_ATTRIBUTE_NAMES) == 24
 
     def test_display_names_cover_all_attributes(self) -> None:
         for name in CELEBA_ATTRIBUTE_NAMES:
