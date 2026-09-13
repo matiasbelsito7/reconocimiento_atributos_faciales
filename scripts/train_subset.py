@@ -69,6 +69,7 @@ class SubsetTrainer:
                 CachedAttributeDataset(
                     annotations_file=annotations_file,
                     cache_dir=cache_dir,
+                    attribute_columns=attribute_subset,
                 )
             )
             print(
@@ -343,17 +344,64 @@ class SubsetTrainer:
 
 
 if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Entrenar modelo de atributos faciales en un subconjunto para CPU"
+    )
+    parser.add_argument(
+        "--attribute-subset",
+        default=None,
+        help="Subconjunto de atributos: 'observable' (24) o columnas Atr_* separadas por coma",
+    )
+    parser.add_argument(
+        "--checkpoint-dir",
+        default="checkpoints_40k",
+        help="Directorio de checkpoints",
+    )
+    parser.add_argument(
+        "--cache-dir",
+        default=os.environ.get("CELEBA_CACHE_DIR", "data/processed/cache_40000"),
+        help="Directorio de cache de .npy",
+    )
+    parser.add_argument(
+        "--annotations",
+        default="data/processed/celeba_subset_40000.csv",
+        help="CSV de anotaciones",
+    )
+    args = parser.parse_args()
+
+    attribute_subset: list[str] | None = None
+    annotations_file = Path(args.annotations)
+    if args.attribute_subset:
+        if args.attribute_subset.lower() == "observable":
+            import pandas as pd
+
+            from facial_attributes.data.dataset import DatasetManager
+
+            df = pd.read_csv(annotations_file)
+            attribute_subset = DatasetManager(
+                annotations_file.parent
+            ).get_observable_attribute_columns(df)
+            print(
+                f"Subset de 24 atributos observables: {attribute_subset}",
+                flush=True,
+            )
+        else:
+            attribute_subset = [
+                c.strip() for c in args.attribute_subset.split(",") if c.strip()
+            ]
+
     trainer = SubsetTrainer()
     trainer.train(
-        annotations_file=Path("data/processed/celeba_subset_40000.csv"),
+        annotations_file=annotations_file,
         images_dir=Path("data/raw/images"),
         num_epochs=10,
         batch_size=32,
         learning_rate=3e-4,
         num_workers=0,
-        checkpoint_dir="checkpoints_40k",
+        checkpoint_dir=args.checkpoint_dir,
         resume=False,
-        cache_dir=Path(
-            os.environ.get("CELEBA_CACHE_DIR", "data/processed/cache_40000")
-        ),
+        cache_dir=Path(args.cache_dir),
+        attribute_subset=attribute_subset,
     )
