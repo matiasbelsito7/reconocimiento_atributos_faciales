@@ -29,6 +29,7 @@ class InferenceConfig:
     per_attribute_thresholds: dict[str, float] = field(default_factory=dict)
     per_attribute_margins: dict[str, float] = field(default_factory=dict)
     margin_default: float = 0.0
+    face_margin: float = 0.3
 
 
 @dataclass
@@ -76,7 +77,9 @@ class InferencePipeline:
         self._device = self._get_device()
 
         self._face_detector = FaceDetector(DetectorConfig())
-        self._face_extractor = FaceExtractor(ExtractorConfig())
+        self._face_extractor = FaceExtractor(
+            ExtractorConfig(margin_percent=self.config.face_margin)
+        )
         self._face_normalizer = FaceNormalizer(NormalizerConfig(target_size=(224, 224)))
 
         self._model: FacialAttributeClassifier | None = None
@@ -186,6 +189,13 @@ class InferencePipeline:
                 predictions.append(
                     FacePrediction(
                         bbox={
+                            "x": face.crop_box.x,
+                            "y": face.crop_box.y,
+                            "w": face.crop_box.width,
+                            "h": face.crop_box.height,
+                        }
+                        if face.crop_box is not None
+                        else {
                             "x": face.bounding_box.x,
                             "y": face.bounding_box.y,
                             "w": face.bounding_box.width,

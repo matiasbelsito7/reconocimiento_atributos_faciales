@@ -16,6 +16,7 @@ class ExtractedFace:
     bounding_box: BoundingBox
     original_size: tuple[int, int]
     source_path: Path | None = None
+    crop_box: BoundingBox | None = None
 
 
 @dataclass
@@ -73,6 +74,13 @@ class FaceExtractor:
                     bounding_box=face,
                     original_size=(image.width, image.height),
                     source_path=source_path,
+                    crop_box=BoundingBox(
+                        x=x1,
+                        y=y1,
+                        width=x2 - x1,
+                        height=y2 - y1,
+                        confidence=face.confidence,
+                    ),
                 )
             )
 

@@ -217,6 +217,74 @@ class TestInferencePipeline:
                 assert result.error is None
                 assert result.num_faces_detected == 1
 
+    def test_pipeline_uses_crop_box_when_available(
+        self, sample_pil_image: Image.Image
+    ) -> None:
+        """Test de que bbox usa el crop_box expandido si está disponible."""
+        config = InferenceConfig(device="cpu", attribute_names=["smiling"])
+        pipeline = InferencePipeline(config)
+
+        mock_model = MagicMock()
+        mock_model.predict_proba.return_value = torch.tensor([[0.9]])
+        pipeline._model = mock_model
+
+        with patch.object(pipeline._face_detector, "detect") as mock_detect:
+            mock_detect.return_value = MagicMock(
+                faces=[MagicMock(x=100, y=80, width=100, height=140, confidence=0.95)],
+                image_size=(300, 300),
+                num_faces=1,
+            )
+
+            with patch.object(
+                pipeline._face_extractor, "extract_faces"
+            ) as mock_extract:
+                mock_face = MagicMock()
+                mock_face.bounding_box = MagicMock(
+                    x=100, y=80, width=100, height=140, confidence=0.95
+                )
+                mock_face.crop_box = MagicMock(
+                    x=40, y=30, width=180, height=220, confidence=0.95
+                )
+                mock_face.image = Image.new("RGB", (224, 224), color=(128, 128, 128))
+                mock_extract.return_value = [mock_face]
+
+                result = pipeline.predict(sample_pil_image)
+
+                assert result.faces[0].bbox == {"x": 40, "y": 30, "w": 180, "h": 220}
+
+    def test_pipeline_bbox_falls_back_to_detection(
+        self, sample_pil_image: Image.Image
+    ) -> None:
+        """Test de que bbox cae al box del detector si no hay crop_box."""
+        config = InferenceConfig(device="cpu", attribute_names=["smiling"])
+        pipeline = InferencePipeline(config)
+
+        mock_model = MagicMock()
+        mock_model.predict_proba.return_value = torch.tensor([[0.9]])
+        pipeline._model = mock_model
+
+        with patch.object(pipeline._face_detector, "detect") as mock_detect:
+            mock_detect.return_value = MagicMock(
+                faces=[MagicMock(x=100, y=80, width=100, height=140, confidence=0.95)],
+                image_size=(300, 300),
+                num_faces=1,
+            )
+
+            with patch.object(
+                pipeline._face_extractor, "extract_faces"
+            ) as mock_extract:
+                mock_face = MagicMock()
+                mock_face.bounding_box = MagicMock(
+                    x=100, y=80, width=100, height=140, confidence=0.95
+                )
+                mock_face.crop_box = None
+                mock_face.image = Image.new("RGB", (224, 224), color=(128, 128, 128))
+                mock_extract.return_value = [mock_face]
+
+                result = pipeline.predict(sample_pil_image)
+
+                assert result.faces[0].bbox == {"x": 100, "y": 80, "w": 100, "h": 140}
+
     def test_pipeline_with_margins(self, sample_pil_image: Image.Image) -> None:
         """Test de pipeline con thresholds y márgenes por atributo."""
         config = InferenceConfig(

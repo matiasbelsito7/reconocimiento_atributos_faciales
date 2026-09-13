@@ -85,12 +85,13 @@ def get_pipeline() -> InferencePipeline:
 
 
 def _load_thresholds_config() -> (
-    tuple[float, dict[str, float], dict[str, float], float]
+    tuple[float, dict[str, float], dict[str, float], float, float]
 ):
-    """Cargar thresholds y márgenes desde config/inference.yaml.
+    """Cargar thresholds, márgenes y margen facial desde config/inference.yaml.
 
     Returns:
-        Tupla (default, per_attribute, margins_per_attribute, margin_default).
+        Tupla (default, per_attribute, margins_per_attribute, margin_default,
+        face_margin).
     """
     try:
         inference_config = ConfigLoader().load_inference()
@@ -98,7 +99,7 @@ def _load_thresholds_config() -> (
         logger.warning(
             "No se pudo cargar config/inference.yaml. Usando thresholds por defecto."
         )
-        return 0.5, {}, {}, 0.0
+        return 0.5, {}, {}, 0.0, 0.3
 
     thresholds = inference_config.thresholds
     return (
@@ -106,6 +107,7 @@ def _load_thresholds_config() -> (
         thresholds.per_attribute,
         thresholds.margins_per_attribute,
         thresholds.margin_default,
+        inference_config.face_extraction.margin,
     )
 
 
@@ -136,6 +138,7 @@ def init_pipeline(model_path: str | None = None) -> InferencePipeline:
         per_attribute_thresholds,
         per_attribute_margins,
         margin_default,
+        face_margin,
     ) = _load_thresholds_config()
 
     config = InferenceConfig(
@@ -147,6 +150,7 @@ def init_pipeline(model_path: str | None = None) -> InferencePipeline:
         per_attribute_thresholds=per_attribute_thresholds,
         per_attribute_margins=per_attribute_margins,
         margin_default=margin_default,
+        face_margin=face_margin,
     )
 
     _PIPELINE = InferencePipeline(config)

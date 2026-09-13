@@ -169,6 +169,38 @@ class TestFaceExtractor:
         assert len(faces) == 1
         assert isinstance(faces[0], ExtractedFace)
 
+    def test_extract_faces_computes_crop_box(self) -> None:
+        """Test de crop_box expandido con margen."""
+        extractor = FaceExtractor(ExtractorConfig(margin_percent=0.5, min_face_size=0))
+        image = Image.new("RGB", (300, 300), color=(128, 128, 128))
+        face = BoundingBox(x=60, y=60, width=80, height=80, confidence=0.9)
+        detection = DetectionResult(faces=[face], image_size=(300, 300), num_faces=1)
+
+        extracted = extractor.extract_faces(image, detection)[0]
+
+        assert extracted.bounding_box.x == 60
+        assert extracted.bounding_box.width == 80
+        assert extracted.crop_box is not None
+        assert extracted.crop_box.x == 20
+        assert extracted.crop_box.y == 20
+        assert extracted.crop_box.width == 160
+        assert extracted.crop_box.height == 160
+
+    def test_extract_faces_crop_box_clamped(self) -> None:
+        """Test de crop_box recortado a los bordes de la imagen."""
+        extractor = FaceExtractor(ExtractorConfig(margin_percent=0.5, min_face_size=0))
+        image = Image.new("RGB", (100, 100), color=(128, 128, 128))
+        face = BoundingBox(x=80, y=80, width=10, height=10, confidence=0.9)
+        detection = DetectionResult(faces=[face], image_size=(100, 100), num_faces=1)
+
+        extracted = extractor.extract_faces(image, detection)[0]
+
+        assert extracted.crop_box is not None
+        assert extracted.crop_box.x == 75
+        assert extracted.crop_box.width == 20
+        assert extracted.crop_box.y == 75
+        assert extracted.crop_box.height == 20
+
     def test_extract_largest_face(self, sample_pil_image: Image.Image) -> None:
         """Test de extracción del rostro más grande."""
         extractor = FaceExtractor()

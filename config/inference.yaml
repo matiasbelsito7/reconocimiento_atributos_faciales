@@ -69,7 +69,7 @@ face_detection:
 
 # Configuración de face extraction
 face_extraction:
-  margin: 0.2
+  margin: 0.3
   largest_face_only: true
   target_size: [224, 224]
 
